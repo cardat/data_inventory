@@ -85,8 +85,8 @@ use_janrain(auth, filename='private/janrain.key')
 # auth.enable_record_versioning(db)
 
 
-
-
+# joining (linking) tables for many-to-many relationships prefixed with 'j'
+# except the accessor table for legacy reasons
 
 # USERS ####
 # CARDAT user record, person's details for access records
@@ -149,7 +149,10 @@ db.define_table(
 
 
 # METADATA ####
-# records of data repository contents
+# records of data repository contents 
+# in PROJECT-DATASET-ENTITY hierarchical tree
+
+# PROJECT level 
 db.define_table(
     'project',
 Field('title', 'string', required = True,
@@ -157,14 +160,6 @@ comment= XML(T('Overarching project in format [Organisation]_[Project Title/Them
 A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-1', scheme=True, host=True)), _target='new'))),
 unique=True
 ),
-# Field('data_owner','list:reference cardat_user',
-# comment= XML(T('This is the data owner (or project originator). It is a compulsory field. %s',
-# A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new'))),
-# ),
-# Field('data_owner_affiliation','string', 
-# comment= XML(T('This is the data owner organisation. %s',
-# A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
-# ),
 Field('abstract', 'text',
 comment= XML(T('Descriptive abstract that summarizes information about the umbrella project context of the specific project. %s',
 A('More', _href=XML(URL('static','index.html',  anchor='sec-5-1-3', scheme=True, host=True)))))
@@ -173,10 +168,6 @@ Field('study_extent','string',
 comment= XML(T('This can include descriptions of the geographic, temporal, and taxonomic coverage of the research location. %s', 
 A('More', _href=XML(URL('static','index.html', anchor='sec-5-1-4', scheme=True, host=True)))))
 ),
-# Field('personnel','string', 
-# comment= XML(T('This is for key people etc that are not the owner. %s',
-# A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
-# ),
 Field('funding', 'text',
 comment= XML(T('Significant funding sources under which the data has been collected over the lifespan of the project. %s',
 A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-3', scheme=True, host=True)), _target='new')))
@@ -196,121 +187,168 @@ db.project.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'project.title')]
 # require a project data owner
 # db.project.data_owner.requires = IS_NOT_EMPTY()
 
+# Project personnel
+# join table with project id and personnel id
+db.define_table(
+    'j_project_personnel',
+    Field('project_id', db.project, required = True),
+    Field('personnel_id', db.personnel, required = True),
+    Field('role', 'string', required = True,
+        requires = IS_IN_SET(('owner', 'other'))
+    ), 
+    Field('notes', 'string'),
+    auth.signature,
+    format = '%(project_id)s %(personnel_id)s' 
+)
+
+
+
 #### ONE (project) TO MANY (dataset)
 db.define_table(
     'dataset',
-    Field('project_id',db.project),
-Field('shortname','string', comment = XML(T('A concise name, eg. vernal-data-1999. %s.',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2-1', scheme=True, host=True)),  _target='new')))
+    ## title, personnel, identification of dataset
+    Field('project_id', db.project),
+Field('shortname','string',
+##      comment = XML(T('A concise name, eg. vernal-data-1999. %s.',
+##A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2-1', scheme=True, host=True)),  _target='new')))
+      comment = 'Concise name for folder in CARDAT data repository. No spaces or special characters. Format: [project]_[data_type]_[location]_[temporal_tranche].'
 ),
-Field('title','string', comment = XML(T('Structure eg: project, data type, location, temporal tranches. %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2', scheme=True, host=True)))))
-),
-Field('creator','string', comment='The name of the person, organization, or position who created the data'),
-Field('contact','string', comment = 'A contact name for general enquiries.  This field defaults to creator.'),
+Field('title','string',
+      comment = 'Descriptive name.'),
+# Field('creator','string', comment='The name of the person, organization, or position who created the data'),
+Field('contact','string', comment = 'A contact name for general enquiries.', default = "CARDAT Data Team"),
 Field('contact_email','string', comment = 'An email address for general enquiries.'),
-Field('abstract','text', comment = XML(T('A brief overview of the resource that is being documented. The abstract should include basic information that summarizes the study/data. %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2', scheme=True, host=True)))))),
-Field('additional_metadata' ,'string', comment="Any additional metadata such as folder path or URL links to related webpages."),
-Field('alternate_identifier' ,'string', comment = XML(T('An additional, secondary identifier for this entity, possibly from different data management systems. This might be a DOI, or other persistent URL. %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2', scheme=True, host=True)))))),
-Field('recommended_citation', 'text', comment="For example: 1. Creator (Publication Year): Title. Publisher. Identifier. 2. Creator (Publication Year): Title. Publisher. Date retrieved from website (URL). 3. Creator (Publication Year): Title. Publisher. Date received from data provider (name, role or organisation)."),
-Field('studyextent' ,'text', comment="Both a specific sampling area and frequency (temporal boundaries, frequency of occurrence, spatial extent and spatial resolution)."),
+Field('associated_party','text', comment = 'A person, organisational role or organisation who has had an important role in the creation or maintenance of the data (i.e. parties who grant access to survey sites as landholder or land manager, or may have provided funding for the surveys)'),
+Field('repository_path' ,'string', comment='Dataset location in CARDAT repository - typically folder path from Environment_General or ResearchProjects_CAR. May be alternative storage location for restricted data.'),
+Field('repository_link' ,'string', comment='Link to dataset folder in data repository or code repository.'),
+Field('url_link' ,'string', comment = 'URL link or DOI to source if public. An additional, secondary identifier for this entity, possibly from different data management systems. DOI or other persistent URL preferred.'),
+Field('recommended_citation', 'text', comment='For example: 1. Creator (Publication Year): Title. Publisher. Identifier. 2. Creator (Publication Year): Title. Publisher. Date retrieved from website (URL). 3. Creator (Publication Year): Title. Publisher. Date received from data provider (name, role or organisation).'),
+
+## description of data contained
+Field('abstract','text', comment = 'A brief overview of the resource that is being documented. The abstract should include basic information that summarizes the study data'),
+Field('studyextent' ,'text', comment= 'Both a specific sampling area and frequency (temporal boundaries, frequency of occurrence, spatial extent and spatial resolution).'),
+# spatial
+Field('geographicdescription','string',
+comment = 'A general description of the geographic area in which the data were collected. This can be a simple place name (e.g. Kakadu National Park).'     
+),
+Field('boundingcoordinates','string',
+comment = 'bounding coordinates in order N, S, E, W (Optionally also add altitudeMinimum, altitudeMax)'
+),
+# temporal
 Field('temporalcoverage_daterange','string', comment = "A text description of the temporal range that events were observed on"),
 Field('temporalcoverage_begindate','date', comment="A begin date.  The dates that events were observed on."),
 Field('temporalcoverage_enddate','date', comment="A end date. The dates that events were observed on."),
-Field('methods_protocol' , 'text', comment = XML(T('The protocol field is used to either reference a protocol citation or describe the methods that were prescribed to define a study or dataset. Note that the protocol is intended to be used to document a prescribed procedure which may or may not have been performed (see Method Steps). %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2-9', scheme=True, host=True)))))),
-Field('sampling_desc' ,'text', comment = XML(T('Similar to a description of sampling procedures found in the methods section of a journal article. %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2-10', scheme=True, host=True)))))),
-Field('method_steps','text', comment=XML(T('EACH method step to implement the measurement protocols and set up the study. Note that the method is used to describe procedures that were actually performed. The method may have diverged from the protocol purposefully, or perhaps incidentally, but the procedural lineage is still preserved and understandable. %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2-11', scheme=True, host=True)))))),
-Field('associated_party','text', comment = XML(T('A person, organisational role or organisation who has had an important role in the creation or maintenance of the data (i.e. parties who grant access to survey sites as landholder or land manager, or may have provided funding for the surveys). %s.',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2', scheme=True, host=True)))))
-  ),
-Field('geographicdescription','string',
-comment = XML(T('A general description of the geographic area in which the data were collected. This can be a simple place name (e.g. Kakadu National Park). %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2', scheme=True, host=True)))))     
-),
-Field('boundingcoordinates','string',
-comment = XML(T('bounding coordinates in order N, S, E, W (Optionally also add altitudeMinimum, altitudeMax). %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2', scheme=True, host=True)))))     
-),
-Field('taxonomic_coverage','string', comment="List of scientific names."),
-Field('additionalinfo','string', comment = XML(T('Any information that is not characterised well by EML metadata. Example is a group id for grouping datasets apart from EML-project (such as a funding stream, or a particular documentation such as provision agreement). %s.',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2-15', scheme=True, host=True)),  _target='new')))
-  ),
-Field('publisher','string',
-comment = XML(T('The publisher of this data set (e.g. repository, publishing house, any institution making the data available). %s.',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-2-2-18', scheme=True, host=True)), _target='new')))     
-),
-Field('pubdate','date'),
-Field('access_rules','text', comment = "The eml-access module describes the level of access that is to be allowed or denied to a resource for a particular user or group of users"),
-Field('distribution_methods','text', comment = "The methods of distribution used for others to access the software, data, and documentation."),
-Field('metadataprovider','string', comment = 'The name of the person who produced the metadata.'),
-Field('provision_status','string', comment = 'The status of this data provision (Identified, Requested or Provided).'),
-Field('provision_date','date', comment = 'The date provided.'),
+
+# methodology
+Field('methods_protocol' , 'text', comment = 'The protocol field is used to either reference a protocol citation or describe the methods that were prescribed to define a study or dataset. Note that the protocol is intended to be used to document a prescribed procedure which may or may not have been performed (see Method Steps).'),
+Field('sampling_desc' ,'text', comment = 'Similar to a description of sampling procedures found in the methods section of a journal article.'),
+Field('method_steps','text', comment=XML(T('Each method step to implement the measurement protocols and set up the study. Note that the method is used to describe procedures that were actually performed. The method may have diverged from the protocol purposefully, or perhaps incidentally, but the procedural lineage is still preserved and understandable. %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2-11', scheme=True, host=True)))))),
+# other
+Field('additional_info','text', comment = 'Additional information'),
+Field('publisher','string', comment = 'The publisher of this data set (e.g. repository, publishing house, any institution making the data available)'),
+
+# sharing
+Field('access_rules','text', comment = "TO REMOVE"),
+Field('distribution_methods','text', comment = "TO REMOVE"),
+Field('metadataprovider','string', comment = 'TO REMOVE'),
+
+# publication process
 Field('request_notes','text', comment = 'Any relevant information regarding this data provision request.'),
 Field('request_date','date', comment = 'Date provision requested.'),
+Field('provision_status','string', comment = 'The status of this data provision. Leave blank for working folders.'),
+Field('provision_date','date', comment = 'The date provided.'),
+Field('pubdate','date'),
+auth.signature,
 format = '%(shortname)s'
-    )
+)
+db.dataset.project_id.requires = IS_IN_DB(db, 'project.id', db.project.title)
+# require unique and non-empty title
+db.dataset.shortname.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'dataset.shortname')]
+db.dataset.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'dataset.title')]
 
 db.dataset.contact_email.requires = [IS_EMAIL()]
-db.dataset.creator.requires = [IS_NOT_EMPTY()]
-db.dataset.provision_status.requires = IS_IN_SET(['','Identified', 'Requested', 'Provided', 'QC', 'Published'])      
-# db.dataset.metadataprovider.requires = [IS_EMAIL(), IS_NOT_IN_DB(db, 'dataset.metadataprovider')]
+db.dataset.provision_status.requires = IS_IN_SET(['','Identified', 'Requested', 'Provided', 'QC', 'Published', 'Retired', 'Working'])      
+
+# Dataset licencing 
+#### ONE (dataset) to ONE (intellectualright)
+db.define_table(
+    'intellectualright',
+    Field('dataset_id', db.dataset, unique = True),
+    # intellectual rights - from CARDAT to User
+    Field('licence_code', 'string', comment = "The licence to allow others to copy, distribute or display work and derivative works based upon it and define the way credit will be attributed. Common licences are 'CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND' or 'other'. For more information see http://creativecommons.org/licenses/."),
+    Field('licence_text', 'string', comment = 'The name of the licence.'),
+    Field('special_conditions', 'text', comment = 'Any restrictions to be placed on the access or use of this dataset, especially the timeframe if this is limited.'),
+    Field('path_to_licence', 'string', comment = 'Optional.'),
+    Field('accessibility', 'string', comment = 'Broad category of accessibility: Public (no special permission required), CARDAT (no special permission required for CARDAT members), Restricted (special permission required), Other.'),
+    Field('notes', 'text', comment = 'Additional info (e.g. licencing of data sources)'),
+    auth.signature,
+    format = '%(licence_text)s (%(licence_code)s)'
+    )
+db.intellectualright.dataset_id.requires = IS_IN_DB(db, 'dataset.id', db.dataset.shortname)
+db.intellectualright.licence_code.requires = IS_IN_SET(['CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND', 'MIT',  'Apache-2.0', 'BSD-3-Clause', 'other'])    
+db.intellectualright.accessibility.requires = IS_IN_SET(['Public', 'CARDAT', 'Restricted', 'Other'])
+
+# Journal article (or other documentation) describing the methodology used to produce the dataset.
+db.define_table(
+    'dataset_publication',
+    Field('dataset_id', db.dataset),
+    Field('link', 'string', comment = 'Link to publication, DOI or other persistent URL preferred'),
+    Field('title', 'string', comment = 'Title of publication'),
+    Field('author', 'string', comment = 'Author(s) of publication'),
+    Field('citation', 'text', comment = 'Citation of publication'),
+    auth.signature,
+    format = '%(title)s'
+    )
+db.dataset_publication.dataset_id.requires = IS_IN_DB(db, 'dataset.id', db.dataset.shortname)
+db.dataset_publication.title.requires = IS_NOT_EMPTY()
+db.dataset_publication.link.requires = IS_EMPTY_OR(IS_URL())
+
+# Dataset personnel
+db.define_table(
+    'j_dataset_personnel',
+    Field('dataset_id', db.dataset, required = True),
+    Field('personnel_id', db.personnel, required = True),
+    Field('role', 'string', required = True,
+        requires = IS_IN_SET(('owner', 'creator', 'contact', 'other'))
+    ), 
+    Field('notes', 'string'),
+    auth.signature,
+    format = '%(dataset_id)s %(personnel_id)s' 
+)
+
 #### ONE (dataset) TO MANY (entity)
-  
+# equivalent of a 'resource' in other metadata schemas
 db.define_table(
       'entity',
-Field('dataset_id',db.dataset),
+Field('dataset_id', db.dataset),
 Field('entityname','string', comment = "The file name, name of database table, etc. It should identify the entity in the dataset. Example: SpeciesAbundance1996.csv", requires = IS_NOT_EMPTY()),
-Field('entitydescription', 'string', comment = "Text generally describing the entity, its type, and relevant information about the data in the entity. Example: Species abundance data for 1996 at the VCR LTER site"),
+Field('entitytype', 'string', comment = "General format of the data"),
+Field('entitydescription', 'string', comment = "Text generally describing the content of the entity."),
 Field('physical_distribution', 'string',
-comment= XML(T('Information required for retrieving the resource. %s',    
-      A('More', _href=XML(URL('static','index.html',  anchor='sec-5-3-4', scheme=True, host=True)))))
-      ),
-      Field('physical_distribution_additionalinfo', 'text',
-comment= XML(T('Additional Information about the storage of the resource, including backup regime. %s',    
-      A('More', _href=XML(URL('static','index.html',  anchor='sec-5-3-4', scheme=True, host=True)))))
-      ),
-Field('entity_temporalcoverage_daterange','string', comment = "A text description of the temporal range that events were observed on"),
-Field('entity_methods', 'text', comment = "Information on the specific methods used to collect information in this entity."),
-Field('numberofrecords', 'integer', comment = 'The number of rows in a table.'),
+comment= 'Information required for retrieving the resource.'),
+Field('physical_distribution_additionalinfo', 'text',
+comment= 'Additional Information about the storage of the resource, including backup regime.'),
+auth.signature,
 format = '%(entityname)s'
 )
-#### ONE (entity) TO MANY (attributes/variables)
 
+# Entity attributes
+#### ONE (entity) TO MANY (attributes/variables)
+# Attributes of entities
 db.define_table(
     'attr',
-    Field('entity_id',db.entity),
+    Field('entity_id', db.entity),
     Field('variable_name', 'string', comment = 'The name of the variable'),
     Field('variable_definition', 'string', comment = 'Definition of the variable.'),
     Field('measurement_scales', 'string', comment = 'One of nominal, ordinal, interval, ratio or datetime', requires = IS_IN_SET(['nominal', 'ordinal', 'interval', 'ratio', 'datetime'])),
     Field('units', 'string', comment = 'Standard Unit of Measurement'),
-    Field('value_labels', 'string', comment = 'Labels for levels of a factor.  For example a=bud, b=flower, c=fruiting')      
+    Field('value_labels', 'string', comment = 'Factor labels and meaning')      
     )
-
-
-#### ONE (intellectualright) TO one (dataset)
-db.define_table(
-    'intellectualright',
-    Field('dataset_id',db.dataset),
-    Field('data_owner', 'string', comment = 'The person or organisation with authority to grant permissions to access data.'),
-    Field('data_owner_contact', 'string', comment = 'Optional.'),
-    Field('accessibility', 'string', comment = XML(T("The data can be 1) public, 2) only a group or 3) restricted to a person %s",     A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2', scheme=True, host=True)))))
-    ),
-    Field('licencee', comment = 'Optional.'),    
-    Field('licence_code', 'string', comment = XML(T("The licence to allow others to copy, distribute or display work and derivative works based upon it and define the way credit will be attributed. Common licences are 'CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND' or 'other'. For more information see http://creativecommons.org/licenses/. %s",     A('More', _href=XML(URL('static','index.html',  anchor='sec-5-2', scheme=True, host=True)))))
-    ),
-    Field('licence_text', 'string', comment = 'The name of the licence.'),
-    Field('special_conditions', 'text', comment = 'Any restrictions to be placed on the access or use, especially the timeframe if this is limited.'),
-    Field('path_to_licence', 'string', comment = 'Optional.')
-    )
-    
-db.intellectualright.licence_code.requires = IS_IN_SET(['CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND', 'other'])    
-db.intellectualright.accessibility.requires = IS_IN_SET(['Public', 'CAR', 'CERAPH',  'Restricted', 'other'])
-
 
 
 
 # ACCESS REQUESTS TO DATA ####
-# Unique access request
+# Unique access requests
 db.define_table(
     'accessrequest',
     Field('title', 'string', comment = "A short (two or three word) title of the project for which the data are to be used",
@@ -322,7 +360,7 @@ db.define_table(
     Field('primary_purpose', 'string', comment = ""),
     Field('other_info', 'text', comment = "Additional info or notes"),
     auth.signature,
-    format = '%(title)s'# %(accessdataset_id)s -> %(dataset_id)s'
+    format = '%(title)s'
     )
 
 db.accessrequest.title.requires = [IS_NOT_EMPTY()]    
@@ -335,7 +373,7 @@ db.define_table(
     'request_output',
     Field('accessrequest_id', db.accessrequest),
     Field('output_category', 'string', requires = IS_IN_SET(["Journal Article", "Dataset", "Report", "Media Article", "Thesis", "Other"])),
-    Field('link', 'string', requires = IS_URL()),
+    Field('link', 'string', requires = IS_URL(), comment = "DOI where possible.'"),
     Field('title', 'string'),
     Field('author', 'string'),
     Field('publication', 'string', comment = 'Journal, data portal/repository, book, newspaper, etc.'),
@@ -365,6 +403,9 @@ db.define_table(
 db.accessor.accessrequest_id.requires = IS_IN_DB(db, 'accessrequest.id', db.accessrequest.title)
 db.accessor.cardat_user_id.requires = IS_IN_DB(db, 'cardat_user.id', db.cardat_user.name)
 
+
+
+
 # KEYWORDS ####
 # tags for datasets
 db.define_table(
@@ -383,3 +424,11 @@ db.define_table(
 db.keyword.keyword.requires = IS_NOT_IN_DB(
     db(db.keyword.thesaurus == request.vars.thesaurus),
     'keyword.keyword')
+
+db.define_table(
+    'j_dataset_keyword',
+    Field('dataset_id', db.dataset, required = True),
+    Field('dataset_id', db.keyword, required = True),
+    auth.signature,
+    format = '%(dataset_id)s: %(keyword_id)s'
+)
