@@ -19,8 +19,7 @@ def index():
     return auth.wiki()
     """
     response.flash = T("Welcome to the CARDAT data inventory!")
-    return dict(message=T('This is CARDAT data inventory'))
- 
+    return dict()
 
 def user():
     """
