@@ -1,10 +1,4 @@
 
-response.menu = [['Inventory Home', False, URL('data_inventory','default','index')],
-                 ['Manage Projects', False, URL('manage_projects')],
-                 ['Manage Datasets', False, URL('manage_datasets')],
-                 ['Manage Accessors or Groups', False, URL('manage_accessors_or_groups')],
-                 ['Set Access to a Dataset', False, URL('access_dataset')],
-                 ['Documentation', False, XML(URL('static','index.html', scheme=True, host=True))]]
 def access_dataset():
     form = SQLFORM.factory(
         Field('accessdataset_id',requires=IS_IN_DB(db,db.accessdataset.id,'%(name)s')),
