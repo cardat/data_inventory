@@ -5,13 +5,13 @@
 ## Customize your APP title, subtitle and menus here
 #########################################################################
 
-response.logo = A(B('web',SPAN(2),'py'),XML('&trade;&nbsp;'),
-                  _class="brand",_href="http://www.web2py.com/")
+# response.logo = A(B('web',SPAN(2),'py'),XML('&trade;&nbsp;'),
+#                   _class="brand",_href="http://www.web2py.com/")
 response.title = request.application.replace('_',' ').title()
 response.subtitle = ''
 
 ## read more at http://dev.w3.org/html5/markup/meta.name.html
-response.meta.author = 'Your Name <you@example.com>'
+response.meta.author = 'Centre for Safe Air CARDAT Platform'
 response.meta.keywords = 'web2py, python, framework'
 response.meta.generator = 'Web2py Web Framework'
 
@@ -22,9 +22,13 @@ response.google_analytics_id = None
 ## this is the main application menu add/remove items as required
 #########################################################################
 
-response.menu = [
-    (T('Home'), False, URL('default', 'index'), [])
-]
+response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
+                 ['Manage Data', False, URL('manage_data')],
+                 ['Manage Access', False, URL('manage_access')],
+                 ['Manage Users', False, URL('manage_users')],
+                 ['Manage Keywords', False, URL('manage_keywords')],
+                 ['Documentation', False, XML(URL('static','index.html', scheme=True, host=True))],
+                 ['Statistics', False, URL('stats')]]
 
 DEVELOPMENT_MENU = True
 

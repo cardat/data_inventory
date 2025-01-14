@@ -18,8 +18,8 @@ def index():
     if you need a simple wiki simply replace the two lines below with:
     return auth.wiki()
     """
-    response.flash = T("Welcome to the data inventory!")
-    return dict(message=T('This is a data inventory for ecological data collections'))
+    response.flash = T("Welcome to the CARDAT data inventory!")
+    return dict(message=T('This is CARDAT data inventory'))
  
 
 def user():
