@@ -285,7 +285,10 @@ db.define_table(
     Field('units', 'string', comment = 'Standard Unit of Measurement'),
     Field('value_labels', 'string', comment = 'Labels for levels of a factor.  For example a=bud, b=flower, c=fruiting')      
     )
-#### accessdatasets
+
+
+
+# ACCESS REQUESTS TO DATA
   
 db.define_table(
     'accessdataset',
@@ -345,172 +348,8 @@ db.define_table(
     
 db.intellectualright.licence_code.requires = IS_IN_SET(['CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND', 'other'])    
 db.intellectualright.accessibility.requires = IS_IN_SET(['Public', 'CAR', 'CERAPH',  'Restricted', 'other'])
-#### ONE (checklist) TO one (dataset)
-db.define_table(
-    'checklist',
-    Field('dataset_id',db.dataset),
-Field('checked_by','string'),
-Field('check_date','date'),
-Field('notes_comments','text'),
-Field('data_package_title_check','boolean'),
-Field('data_set_citation_check','boolean'),
-Field('data_package_owner_check','boolean'),
-Field('data_package_owner_check_individual_name','boolean'),
-Field('data_package_owner_check_position_role','boolean'),
-Field('data_package_owner_check_organization','boolean'),
-Field('data_package_owner_check_address','boolean'),
-Field('data_package_owner_check_phone','boolean'),
-Field('data_package_owner_check_email_address','boolean'),
-Field('associated_parties','boolean'),
-Field('associated_parties_individual_name','boolean'),
-Field('associated_parties_position','boolean'),
-Field('associated_parties_organization','boolean'),
-Field('associated_parties_physical_address','boolean'),
-Field('associated_parties_phone','boolean'),
-Field('associated_parties_email_address','boolean'),
-Field('abstract','boolean'),
-Field('keywords_and_subject_categories','boolean'),
-Field('gcmd_science_keywords','boolean'),
-Field('anzsrc_for_codes','boolean'),
-Field('ltern_monitoring_themes','boolean'),
-Field('keywords_free_text','boolean'),
-Field('geographic_coverage','boolean'),
-Field('geographic_description','boolean'),
-Field('bounding_coordinates','boolean'),
-Field('temporal_coverage','boolean'),
-Field('contacts_individual_names','boolean'),
-Field('contacts_positions','boolean'),
-Field('contacts_organizations','boolean'),
-Field('contacts_addresses','boolean'),
-Field('contacts_phone','boolean'),
-Field('contacts_email_addresses','boolean'),
-Field('methods_and_sampling_information','boolean'),
-Field('method_step_titles','boolean'),
-Field('method_step_description','boolean'),
-Field('instrumentation_details','boolean'),
-Field('sampling_area_and_frequency','boolean'),
-Field('sampling_description','boolean'),
-Field('research_project_title','boolean'),
-Field('research_project_funding_sources','boolean'),
-Field('research_project_personnel_information','boolean'),
-Field('research_project_individual_name','boolean'),
-Field('research_project_position_role','boolean'),
-Field('research_project_organization','boolean'),
-Field('research_project_address','boolean'),
-Field('research_project_phone','boolean'),
-Field('research_project_email_address','boolean'),
-Field('research_project_role','boolean'),
-Field('additional_metadata','boolean'),
 
-Field('access_control','boolean'),
 
-Field('usage_rights','boolean'),
-Field('special_conditions','boolean'),
-Field('entity_metadata','boolean'),
-Field('homepage_content','boolean'),
-Field('eml_homepage_links','boolean'),
-Field('can_the_plot_network_or_data_package_be_filtered_in_the_search_bar_of_the_portal','boolean'),
-Field('draft_publication_checklist_passed','boolean'),
-Field('metacat_publication_checklist_check_public_or_mediated_access','boolean'),
-Field('metacat_publication_checklist_add_publication_date_to_data_inventory','boolean'),
-Field('metacat_publication_checklist_passed','boolean'),
-Field('reporting_checklist_licenced','boolean'),
-Field('reporting_checklist_described_with_metadata_','boolean'),
-Field('reporting_checklist_doi_minted','boolean'),
-Field('reporting_checklist_metadata_feed_to_tddp_and_rda','boolean'),
-Field('reporting_checklist_passed','boolean')
-    )
-    
-db.checklist.checked_by.requires = IS_IN_SET(['Claire', 'Karl'])
-db.checklist.check_date.requires = IS_NOT_EMPTY()
-#### ONE (errors) TO one (dataset)
-db.define_table(
-    'error',
-    Field('dataset_id',db.dataset),
-Field('logged_by','string'),
-Field('date_logged','date'),
-Field('date_actioned','date'),
-Field('error','text'),
-Field('addenda','text')
-    )
-    
-db.error.logged_by.requires = IS_NOT_EMPTY()
-db.error.date_logged.requires = IS_NOT_EMPTY()
-#### ONE (biblio) TO one (entity)
-db.define_table(
-'publication',
-Field('dataset_id',db.dataset),
-Field('bibtex_key', 'string', requires = IS_NOT_EMPTY(),  comment = "For eg from mendeley, use ctrl-k or copy as.  it will be like \cite{xyz}.  COMPULSORY."),
-Field('publication_type','string', requires = IS_IN_SET(['Papers', 'Conference Presentations', 'Reports', 'Policy Briefs', 'Data Packages', 'Software', 'Media'])),
-Field('publication_status','string', requires = IS_IN_SET(['Wishlist','Draft', 'Submitted', 'Revision', 'Accepted', 'Published (peer-reviewed)', 'Published (not peer-reviewed)', 'Self-published (not peer-reviewed)'])),
-Field('publication_status_deadline','date', comment = 'This is the date that the current phase will finish and the next phase of publication starts'),
-Field('title','string'),
-Field('citation', 'string', comment = 'At a minimum author-date-journal, perhaps DOI?'),
-Field('key_results', 'text', comment = 'Include both effect estimates and uncertainty'),
-Field('background_to_study', 'string', comment = ''),
-Field('research_question', 'string', comment = ''),
-Field('study_extent', 'string', comment = ''),
-Field('outcomes','string', comment = ''),
-Field('exposures','string', comment = ''),
-Field('covariates','string', comment = 'Include covariates, effect modifiers, confounders and subgroups'),
-Field('method_protocol', 'text', comment = ''),
-Field('general_comments', 'text', comment = ''),
-Field('publication_description', 'string'),
-Field('google_pubid','string', comment = 'The unique ID used by google scholar'),
-Field('journal','string'),
-Field('year_published','integer'),
-Field('impact_factor','double'),
-Field('date_impact_factor_checked','date'),
-Field('google_scholar_cites','integer'),
-Field('date_gs_cites_checked','date'),
-Field('web_of_science_cites','integer'),
-Field('date_wos_cites_checked','date'),
-Field('contribution','text'),
-Field('thesis_section','string'),
-Field('thesis_context_statement','text'),
-Field('thesis_publication_status','string')
-)
-#### many approval_to_share TO one paper
-db.define_table(
-    'authorship_approval',
-    Field('publication_id',db.publication),
-Field('name','string'),
-Field('email','string'),
-Field('organisation', 'string'),
-Field('date_request_sent','date'),
-Field('date_approval_given','date'),
-Field('times_contacted','integer'),
-Field('notes','text'),
-Field('extra_details', 'text')
-    )
-db.define_table(
-    'crosswalk',
-    Field('eml_module','string'),
-    Field('eml_table','string'),
-    Field('datinv','string'),
-    Field('eml_node','string'),
-    Field('help_comment','text'),
-    Field('eml_desc','text'),
-    Field('eml_standard_link','string'),
-    Field('eml_local_link','string'),
-    Field('ddi_module','string'),
-    Field('ddi_node','string'),
-    Field('morpho','string'),
-    Field('ltern_table','string'),
-    Field('ltern_name','string'),
-    Field('portal_ddf_qaf','string'),
-    Field('ltern_desc','text'),
-    Field('aekos_shared','string'),
-    Field('aekos_desc','text'),
-    Field('asn','string'),
-    Field('tern','string'),
-    Field('ala','string'),
-    Field('psql_type','string'),
-    Field('w2p_code','string'),
-    Field('constraint_text','string'),
-    Field('lter_manual_page','string'),
-    Field('transfer2new','string')
-    )
 
 
 # KEYWORDS ####
