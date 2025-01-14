@@ -287,49 +287,6 @@ db.define_table(
     )
 
 
-
-# ACCESS REQUESTS TO DATA
-  
-db.define_table(
-    'accessdataset',
-    Field('name','string',
-comment= XML(T('A person or group. Keep this to a short (two or three word) title as it is used to specify access requests in the acessrequest table). %s',    
-    A('More', _href=XML(URL('static','index.html',  anchor='sec-5-3-4', scheme=True, host=True)))))
-    ),
-    Field('email'),
-    Field('bio', 'string', comment = "A short description of this person/group."),
-    format = '%(name)s'
-    )
-db.accessdataset.name.requires = IS_NOT_EMPTY()
-db.accessdataset.email.requires = [IS_EMAIL(), IS_NOT_EMPTY()]
-#### MANY (accessors) TO MANY (accessdataset members)
-
-db.define_table(
-    'accessor',
-    Field('accessdataset_id',db.accessdataset),
-    Field('name'),
-    Field('email'),
-    Field('role', 'string', comment = "The role that this person will have in the project, specifically in relation to the data."),
-    Field('role_description', 'text', comment = "Description of the role."),
-    Field('begin_date', 'date', comment = "Access granted on this date"),
-    Field('end_date', 'date', comment = "Access revoked on this date"),
-    format = '%(name)s'
-    )
-db.accessor.email.requires = [IS_EMAIL()]
-# , IS_NOT_IN_DB(db, 'accessor.email')]
-#### MANY (datasets) TO MANY (accessors)
-
-db.define_table(
-    'accessrequest',
-    Field('dataset_id',db.dataset),
-    Field('accessdataset_id',db.accessdataset),
-    Field('title', 'string', comment = "A short (two or three word) title of the project for which the data are to be used"),
-    Field('description', 'text', comment = "A description of the project for which the data are to be used. Include description of any ethics committee approvals and the intended publication strategy."),
-    Field('begin_date', 'date', comment = "Access granted on this date"),
-    Field('end_date', 'date', comment = "Access revoked on this date"),
-    format = '%(title)s %(accessdataset_id)s -> %(dataset_id)s'
-    )
-
 #### ONE (intellectualright) TO one (dataset)
 db.define_table(
     'intellectualright',
@@ -351,6 +308,62 @@ db.intellectualright.accessibility.requires = IS_IN_SET(['Public', 'CAR', 'CERAP
 
 
 
+
+# ACCESS REQUESTS TO DATA ####
+# Unique access request
+db.define_table(
+    'accessrequest',
+    Field('title', 'string', comment = "A short (two or three word) title of the project for which the data are to be used",
+            required = True),
+    Field('date_of_request', 'date', comment = "Date request received by CARDAT.",
+            required = True),
+    Field('description', 'text', comment = "A description of the project for which the data are to be used. Include description of any ethics committee approvals and the intended publication strategy."),
+    Field('category_access', 'text', comment = "Category of access."),
+    Field('primary_purpose', 'string', comment = ""),
+    Field('other_info', 'text', comment = "Additional info or notes"),
+    auth.signature,
+    format = '%(title)s'# %(accessdataset_id)s -> %(dataset_id)s'
+    )
+
+db.accessrequest.title.requires = [IS_NOT_EMPTY()]    
+db.accessrequest.category_access.requires = IS_IN_SET(['Project personnel', 'Data sharing service','Data science service', 'Data training'])
+db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research','Government', 'Teaching', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Other'])
+
+## Secondary to access request
+# record of outputs from access requests
+db.define_table(
+    'request_output',
+    Field('accessrequest_id', db.accessrequest),
+    Field('output_category', 'string', requires = IS_IN_SET(["Journal Article", "Dataset", "Report", "Media Article", "Thesis", "Other"])),
+    Field('link', 'string', requires = IS_URL()),
+    Field('title', 'string'),
+    Field('author', 'string'),
+    Field('publication', 'string', comment = 'Journal, data portal/repository, book, newspaper, etc.'),
+    Field('publication_date', 'date'),
+    Field('status', 'string', default = "Pending"),
+    Field('additional_notes', 'text', comment = 'Additional notes about output'),
+    auth.signature,
+    format = '%(title)s'
+    )
+db.request_output.accessrequest_id.requires = IS_IN_DB(db, 'accessrequest.id', db.accessrequest.title)
+db.request_output.status.requires = IS_IN_SET(['Unknown (lapsed)', 'No output', 'Pending', 'Published'])
+
+#### MANY (accessors) TO ONE (accessrequest)
+# Persons that are part of the access request
+db.define_table(
+    'accessor',
+    Field('accessrequest_id', db.accessrequest),
+    Field('cardat_user_id', db.cardat_user),
+    Field('begin_date', 'date', comment = "Access granted on this date (direct access)"),
+    Field('end_date', 'date', comment = "Access revoked on this date (direct access)"),
+    Field('key_contact', 'boolean', comment = "Study lead or contact person for request. Typically one person per request but may be multiple (e.g. study lead and data analyst)."),
+    Field('role', 'string', comment = "The role that this person will have in the project, specifically in relation to the data."),
+    Field('role_description', 'text', comment = "Description of the role."),
+    auth.signature,
+    format = '%(cardat_user_id)s'
+)
+db.accessor.accessrequest_id.requires = IS_IN_DB(db, 'accessrequest.id', db.accessrequest.title)
+db.accessor.cardat_user_id.requires = IS_IN_DB(db, 'cardat_user.id', db.cardat_user.name)
 
 # KEYWORDS ####
 # tags for datasets
