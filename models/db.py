@@ -326,14 +326,7 @@ db.define_table(
     Field('end_date', 'date', comment = "Access revoked on this date"),
     format = '%(title)s %(accessdataset_id)s -> %(dataset_id)s'
     )
-#### MANY (keywords) TO one (dataset)
 
-db.define_table(
-    'keyword',
-    Field('dataset_id',db.dataset),
-    Field('thesaurus', 'string', comment = 'source of authoritative definitions'),
-    Field('keyword', 'string', requires=IS_IN_DB(db, 'thesaurus_ltern.keyword'))
-    )
 #### ONE (intellectualright) TO one (dataset)
 db.define_table(
     'intellectualright',
@@ -523,10 +516,18 @@ db.define_table(
 # KEYWORDS ####
 # tags for datasets
 db.define_table(
-    'thesaurus',
+    'keyword',
+    Field('thesaurus',
+        required = True,
+        requires = IS_IN_SET("CARDAT"),
+        default = "CARDAT"),
     Field('keyword', 'string', 
         required = True,
-        requires = (IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'thesaurus.keyword'))),
+        requires = (IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'keyword.keyword'))),
     auth.signature,
-    format = '%(keyword)s'
+    format = '%(thesaurus)s: %(keyword)s'
     )
+# unique keywords for each thesaurus
+db.keyword.keyword.requires = IS_NOT_IN_DB(
+    db(db.keyword.thesaurus == request.vars.thesaurus),
+    'keyword.keyword')
