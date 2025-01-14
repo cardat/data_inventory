@@ -83,56 +83,120 @@ use_janrain(auth, filename='private/janrain.key')
 
 ## after defining tables, uncomment below to enable auditing
 # auth.enable_record_versioning(db)
-#### projects
 
+
+
+
+
+# USERS ####
+# CARDAT user record, person's details for access records
+db.define_table(
+    'cardat_user',
+    Field('name', 'string',
+        required = True,
+        requires = IS_NOT_EMPTY()),
+    Field('name_alt', 'string',
+          comment = "Preferred name or abbreviation"),
+    Field('orcid', 'string',
+          requires = IS_EMPTY_OR(IS_NOT_IN_DB(db, 'cardat_user.orcid')),
+          unique = True),
+    Field('affiliation', 'text',
+          comment = "Semi-colon separated list of affiliations"),
+    Field('email', 'string',
+          requires = IS_EMPTY_OR(IS_EMAIL())),
+    Field('email_alt', 'string',
+          comment = "Secondary email address(es), semicolon-separated"),
+    Field('website', 'string'),
+    Field('notes', 'text', comment = "Misc notes"),
+    auth.signature, 
+    format = '%(name)s'
+)
+
+# PERSONNEL ####
+# personnel details for data attribution in metadata (project/dataset owners, creators, other)
+# may be organisations, not only individuals
+db.define_table(
+    'personnel',
+    Field('name', 'string',
+        required = True,
+        requires = IS_NOT_EMPTY()),
+    Field('name_alt', 'string',
+          comment = "Preferred name or abbreviation"),
+    Field('user_type', 'string',
+          requires = IS_IN_SET(['Person', 'Organisation']),
+          widget = SQLFORM.widgets.radio.widget,
+          default = "Person"),
+    Field('id_type', 'string',
+          requires = IS_IN_SET(['ORCID', 'ROR', 'Other']),
+          widget = SQLFORM.widgets.radio.widget,
+          comment = 'ORCID for individuals, ROR for organisations, mark as Other if none available'),
+    Field('idvalue', 'string',
+          requires = IS_EMPTY_OR(IS_NOT_IN_DB(db, 'personnel.idvalue')),
+          unique = True),
+    Field('affiliation', 'text',
+          comment = "Semi-colon separated list of affiliations"),
+    Field('email', 'string',
+          requires = IS_EMPTY_OR(IS_EMAIL())),
+    Field('email_alt', 'string',
+          comment = "Secondary email address(es), semicolon-separated"),
+    Field('website', 'string'),
+    Field('notes', 'text', comment = "Any other information linked to the person or organisation"),
+    auth.signature, 
+    format = '%(name)s'
+)
+
+
+
+
+# METADATA ####
+# records of data repository contents
 db.define_table(
     'project',
-Field('title', 'string',
-comment= XML(T('The project places the data into its larger research context.  %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-1', scheme=True, host=True)), _target='new')))
+Field('title', 'string', required = True,
+comment= XML(T('Overarching project in format [Organisation]_[Project Title/Theme]_[Project Topic].%s',
+A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-1', scheme=True, host=True)), _target='new'))),
+unique=True
 ),
-Field('personnel_data_owner','string', 
-comment= XML(T('This is the data owner (or project originator). It is a compulsory field.  %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
-),
-Field('personnel_owner_organisationname','string', 
-comment= XML(T('This is the data owner organisation. %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
-),
-Field('personnel','string', 
-comment= XML(T('This is for key people etc that are not the owner. %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
-),
-Field('funding', 'text',
-comment= XML(T('Significant funding sources under which the data has been collected over the lifespan of the project. %s',
-A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-3', scheme=True, host=True)), _target='new')))
-),
-Field('project_abstract', 'text',
+# Field('data_owner','list:reference cardat_user',
+# comment= XML(T('This is the data owner (or project originator). It is a compulsory field. %s',
+# A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new'))),
+# ),
+# Field('data_owner_affiliation','string', 
+# comment= XML(T('This is the data owner organisation. %s',
+# A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
+# ),
+Field('abstract', 'text',
 comment= XML(T('Descriptive abstract that summarizes information about the umbrella project context of the specific project. %s',
 A('More', _href=XML(URL('static','index.html',  anchor='sec-5-1-3', scheme=True, host=True)))))
 ),
-Field('studyareadescription','string', 
+Field('study_extent','string', 
 comment= XML(T('This can include descriptions of the geographic, temporal, and taxonomic coverage of the research location. %s', 
 A('More', _href=XML(URL('static','index.html', anchor='sec-5-1-4', scheme=True, host=True)))))
+),
+# Field('personnel','string', 
+# comment= XML(T('This is for key people etc that are not the owner. %s',
+# A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-2', scheme=True, host=True)), _target='new')))
+# ),
+Field('funding', 'text',
+comment= XML(T('Significant funding sources under which the data has been collected over the lifespan of the project. %s',
+A('More', _href=XML(URL('static','index.html',  anchor='sec-2-1-3', scheme=True, host=True)), _target='new')))
 ),
 Field('project_established','date', 
 comment= XML(T('Commencement date of overarching research project as a specific date or year. %s', 
 A('More', _href=XML(URL('static','index.html', anchor='sec-5-1-4', scheme=True, host=True)))))
 ),
 Field('project_citation','text', 
-comment= XML(T('Citations relevant to the design of the overarching project. %s', 
-A('More', _href=XML(URL('static','index.html', anchor='sec-5-1-4', scheme=True, host=True)))))
+comment= XML(T('Citations relevant to the design of the overarching project., %s'))
 ),
-Field('related_project','text', 
-comment= XML(T('A recursive link to another project. This allows projects to be nested under one another. %s', 
-A('More', _href=XML(URL('static','index.html', anchor='sec-2-1-8', scheme=True, host=True)), _target='new')))
-),
+auth.signature,
 format = '%(title)s' 
 )
-  
-db.project.personnel_data_owner.requires = IS_NOT_EMPTY()
-#### ONE (project) TO MANY (dataset)
+# require unique and non-empty title
+db.project.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'project.title')]
+# require a project data owner
+# db.project.data_owner.requires = IS_NOT_EMPTY()
 
+#### ONE (project) TO MANY (dataset)
 db.define_table(
     'dataset',
     Field('project_id',db.project),
@@ -454,9 +518,15 @@ db.define_table(
     Field('lter_manual_page','string'),
     Field('transfer2new','string')
     )
-# thesaurus
 
+
+# KEYWORDS ####
+# tags for datasets
 db.define_table(
-    'thesaurus_ltern',
-    Field('keyword', 'string')
+    'thesaurus',
+    Field('keyword', 'string', 
+        required = True,
+        requires = (IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'thesaurus.keyword'))),
+    auth.signature,
+    format = '%(keyword)s'
     )
