@@ -428,7 +428,7 @@ db.keyword.keyword.requires = IS_NOT_IN_DB(
 db.define_table(
     'j_dataset_keyword',
     Field('dataset_id', db.dataset, required = True),
-    Field('dataset_id', db.keyword, required = True),
+    Field('keyword_id', db.keyword, required = True),
     auth.signature,
     format = '%(dataset_id)s: %(keyword_id)s'
 )
