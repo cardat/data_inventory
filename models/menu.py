@@ -23,12 +23,23 @@ response.google_analytics_id = None
 #########################################################################
 
 response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
-                 ['Manage Data', False, URL('manage_data')],
-                 ['Manage Access', False, URL('manage_access')],
-                 ['Manage Users', False, URL('manage_users')],
-                 ['Manage Keywords', False, URL('manage_keywords')],
+                 [('Quick Access'), False, URL('goto')], 
+                 [('Manage Data'), False, URL('browse', 'manage_datasets'), 
+                    [(('Projects'), False, URL('browse', 'manage_projects')),
+                     (('Datasets'), False, URL('browse', 'manage_datasets')),
+                     (('Data Personnel'), False, URL('browse', 'manage_personnel')),
+                     (('Keywords'), False, URL('browse', 'manage_keywords'))]
+                 ],
+                 [('Manage Access'), False, URL('browse', 'manage_requests'),
+                    [(('Access Requests'), False, URL('browse', 'manage_requests')),
+                     (('Accessors'), False, URL('browse', 'manage_accessors'))
+                    ]
+                 ],
+                 ['Statistics', False, URL('stats'),
+                    [('Audit', False, URL('audit'))]
+                 ],
                  ['Documentation', False, XML(URL('static','index.html', scheme=True, host=True))],
-                 ['Statistics', False, URL('stats')]]
+                 ]
 
 DEVELOPMENT_MENU = True
 
