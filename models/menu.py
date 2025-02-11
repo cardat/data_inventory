@@ -24,15 +24,16 @@ response.google_analytics_id = None
 
 response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
                  [('Quick Access'), False, URL('goto')], 
-                 [('Manage Data'), False, URL('browse', 'manage_datasets'), 
-                    [(('Projects'), False, URL('browse', 'manage_projects')),
-                     (('Datasets'), False, URL('browse', 'manage_datasets')),
-                     (('Data Personnel'), False, URL('browse', 'manage_personnel')),
-                     (('Keywords'), False, URL('browse', 'manage_keywords'))]
+                 [('Manage Data'), False, URL(c='manage', f='browse', args='dataset'), 
+                    [(('Projects'), False, URL(c='manage', f='browse', args='project')),
+                     (('Datasets'), False, URL(c='manage', f='browse', args='dataset')),
+                     (('Data Personnel'), False, URL(c='manage', f='browse', args='personnel')),
+                     (('Keywords'), False, URL(c='manage', f='browse', args='keyword'))]
                  ],
-                 [('Manage Access'), False, URL('browse', 'manage_requests'),
-                    [(('Access Requests'), False, URL('browse', 'manage_requests')),
-                     (('Accessors'), False, URL('browse', 'manage_accessors'))
+                 [('Manage Access'), False, URL(c='manage', f='browse', args='accessrequest'),
+                    [(('Access Requests'), False, URL(c='manage', f='browse', args='accessrequest')),
+                     (('Accessors'), False, URL(c='manage', f='browse', args='accessor')),
+                     (('Users'), False, URL(c='manage', f='browse', args='cardat_user'))
                     ]
                  ],
                  ['Statistics', False, URL('stats'),

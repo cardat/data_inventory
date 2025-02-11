@@ -98,7 +98,6 @@ db.define_table(
     Field('name_alt', 'string',
           comment = "Preferred name or abbreviation"),
     Field('orcid', 'string',
-          requires = IS_EMPTY_OR(IS_NOT_IN_DB(db, 'cardat_user.orcid')),
           unique = True),
     Field('affiliation', 'text',
           comment = "Semi-colon separated list of affiliations"),
@@ -130,9 +129,7 @@ db.define_table(
           requires = IS_IN_SET(['ORCID', 'ROR', 'Other']),
           widget = SQLFORM.widgets.radio.widget,
           comment = 'ORCID for individuals, ROR for organisations, mark as Other if none available'),
-    Field('idvalue', 'string',
-          requires = IS_EMPTY_OR(IS_NOT_IN_DB(db, 'personnel.idvalue')),
-          unique = True),
+    Field('id_value', 'string', unique = True),
     Field('affiliation', 'text',
           comment = "Semi-colon separated list of affiliations"),
     Field('email', 'string',
@@ -183,9 +180,7 @@ auth.signature,
 format = '%(title)s' 
 )
 # require unique and non-empty title
-db.project.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'project.title')]
-# require a project data owner
-# db.project.data_owner.requires = IS_NOT_EMPTY()
+db.project.title.requires = IS_NOT_EMPTY()
 
 # Project personnel
 # join table with project id and personnel id
@@ -200,10 +195,11 @@ db.define_table(
     auth.signature,
     format = '%(project_id)s %(personnel_id)s' 
 )
+db.j_project_personnel._singular = "Project Personnel"
+db.j_project_personnel._plural = "Project Personnel"
 
 
-
-#### ONE (project) TO MANY (dataset)
+### ONE (project) TO MANY (dataset)
 db.define_table(
     'dataset',
     ## title, personnel, identification of dataset
@@ -261,7 +257,6 @@ Field('pubdate','date'),
 auth.signature,
 format = '%(shortname)s'
 )
-db.dataset.project_id.requires = IS_IN_DB(db, 'project.id', db.project.title)
 # require unique and non-empty title
 db.dataset.shortname.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'dataset.shortname')]
 db.dataset.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'dataset.title')]
@@ -284,7 +279,6 @@ db.define_table(
     auth.signature,
     format = '%(licence_text)s (%(licence_code)s)'
     )
-db.intellectualright.dataset_id.requires = IS_IN_DB(db, 'dataset.id', db.dataset.shortname)
 db.intellectualright.licence_code.requires = IS_IN_SET(['CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND', 'MIT',  'Apache-2.0', 'BSD-3-Clause', 'other'])    
 db.intellectualright.accessibility.requires = IS_IN_SET(['Public', 'CARDAT', 'Restricted', 'Other'])
 
@@ -299,7 +293,6 @@ db.define_table(
     auth.signature,
     format = '%(title)s'
     )
-db.dataset_publication.dataset_id.requires = IS_IN_DB(db, 'dataset.id', db.dataset.shortname)
 db.dataset_publication.title.requires = IS_NOT_EMPTY()
 db.dataset_publication.link.requires = IS_EMPTY_OR(IS_URL())
 
@@ -315,6 +308,9 @@ db.define_table(
     auth.signature,
     format = '%(dataset_id)s %(personnel_id)s' 
 )
+db.j_dataset_personnel._singular = "Dataset Personnel"
+db.j_dataset_personnel._plural = "Dataset Personnel"
+
 
 #### ONE (dataset) TO MANY (entity)
 # equivalent of a 'resource' in other metadata schemas
@@ -342,7 +338,9 @@ db.define_table(
     Field('variable_definition', 'string', comment = 'Definition of the variable.'),
     Field('measurement_scales', 'string', comment = 'One of nominal, ordinal, interval, ratio or datetime', requires = IS_IN_SET(['nominal', 'ordinal', 'interval', 'ratio', 'datetime'])),
     Field('units', 'string', comment = 'Standard Unit of Measurement'),
-    Field('value_labels', 'string', comment = 'Factor labels and meaning')      
+    Field('value_labels', 'string', comment = 'Factor labels and meaning'),
+    auth.signature,
+    format = '%(variable_name)s'     
     )
 
 
@@ -367,6 +365,17 @@ db.accessrequest.title.requires = [IS_NOT_EMPTY()]
 db.accessrequest.category_access.requires = IS_IN_SET(['Project personnel', 'Data sharing service','Data science service', 'Data training'])
 db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research','Government', 'Teaching', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Other'])
 
+# Link access request to dataset
+db.define_table(
+    'request_dataset',
+    Field('accessrequest_id', db.accessrequest),
+    Field('dataset_id', db.dataset),
+    Field('approval_date', 'date', comment = "Date request approved", required = True),
+    Field('approval_documentation', 'string', comment = 'Location of record of approval'),
+    auth.signature,
+    format = '%(accessrequest_id)s - %(dataset_id)s'
+    )
+
 ## Secondary to access request
 # record of outputs from access requests
 db.define_table(
@@ -383,7 +392,6 @@ db.define_table(
     auth.signature,
     format = '%(title)s'
     )
-db.request_output.accessrequest_id.requires = IS_IN_DB(db, 'accessrequest.id', db.accessrequest.title)
 db.request_output.status.requires = IS_IN_SET(['Unknown (lapsed)', 'No output', 'Pending', 'Published'])
 
 #### MANY (accessors) TO ONE (accessrequest)
@@ -400,30 +408,23 @@ db.define_table(
     auth.signature,
     format = '%(cardat_user_id)s'
 )
-db.accessor.accessrequest_id.requires = IS_IN_DB(db, 'accessrequest.id', db.accessrequest.title)
-db.accessor.cardat_user_id.requires = IS_IN_DB(db, 'cardat_user.id', db.cardat_user.name)
-
-
 
 
 # KEYWORDS ####
 # tags for datasets
 db.define_table(
     'keyword',
-    Field('thesaurus',
-        required = True,
-        requires = IS_IN_SET("CARDAT"),
-        default = "CARDAT"),
-    Field('keyword', 'string', 
-        required = True,
-        requires = (IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'keyword.keyword'))),
+    Field('thesaurus', required = True, default = "CARDAT"),
+    Field('keyword', 'string', required = True),
     auth.signature,
     format = '%(thesaurus)s: %(keyword)s'
     )
 # unique keywords for each thesaurus
-db.keyword.keyword.requires = IS_NOT_IN_DB(
-    db(db.keyword.thesaurus == request.vars.thesaurus),
-    'keyword.keyword')
+db.keyword.keyword.requires = [
+    IS_NOT_IN_DB(
+        db(db.keyword.thesaurus == request.vars.thesaurus), 'keyword.keyword'), 
+    IS_NOT_EMPTY()]
+db.keyword.thesaurus.requires = IS_IN_SET(("CARDAT",))
 
 db.define_table(
     'j_dataset_keyword',
@@ -432,3 +433,5 @@ db.define_table(
     auth.signature,
     format = '%(dataset_id)s: %(keyword_id)s'
 )
+db.j_dataset_keyword._singular = "Dataset Keyword"
+db.j_dataset_keyword._plural = "Dataset Keywords"
