@@ -92,24 +92,29 @@ use_janrain(auth, filename='private/janrain.key')
 # CARDAT user record, person's details for access records
 db.define_table(
     'cardat_user',
-    Field('name', 'string',
-        required = True,
-        requires = IS_NOT_EMPTY()),
+    Field('name', 'string', "Full name"),
     Field('name_alt', 'string',
           comment = "Preferred name or abbreviation"),
-    Field('orcid', 'string',
-          unique = True),
-    Field('affiliation', 'text',
-          comment = "Semi-colon separated list of affiliations"),
-    Field('email', 'string',
-          requires = IS_EMPTY_OR(IS_EMAIL())),
-    Field('email_alt', 'string',
-          comment = "Secondary email address(es), semicolon-separated"),
+    Field('orcid', 'string', unique = True, comment = "Researcher ORCID (https://orcid.org/)"),
+    Field('affiliation', 'list:string', comment = "Affiliation(s)"),
+    Field('email', 'string', "Primary email address"),
+    Field('email_alt', 'list:string',
+          comment = "Secondary email address(es)"),
     Field('website', 'string'),
     Field('notes', 'text', comment = "Misc notes"),
     auth.signature, 
     format = '%(name)s'
 )
+db.cardat_user.name.requires = IS_NOT_EMPTY()
+db.cardat_user.orcid.requires = [IS_EMPTY_OR([
+    IS_NOT_IN_DB(db, 'cardat_user.orcid'),
+    IS_MATCH('^\d{4}(-\d{4}){3}$', error_message='Not an ORCID format')])] 
+db.cardat_user.website.requires = [IS_EMPTY_OR(IS_URL())]
+
+# Show as link
+db.cardat_user.email.represent = lambda val, row: None if val is None else A(val, _href="mailto:" + val, _target="_blank")
+db.cardat_user.orcid.represent = lambda val, row: None if val is None else A(val, _href="https://orcid.org/" + val, _target="_blank")
+
 
 # PERSONNEL ####
 # personnel details for data attribution in metadata (project/dataset owners, creators, other)
@@ -125,23 +130,30 @@ db.define_table(
           requires = IS_IN_SET(['Person', 'Organisation']),
           widget = SQLFORM.widgets.radio.widget,
           default = "Person"),
-    Field('id_type', 'string',
-          requires = IS_IN_SET(['ORCID', 'ROR', 'Other']),
-          widget = SQLFORM.widgets.radio.widget,
-          comment = 'ORCID for individuals, ROR for organisations, mark as Other if none available'),
-    Field('id_value', 'string', unique = True),
-    Field('affiliation', 'text',
-          comment = "Semi-colon separated list of affiliations"),
-    Field('email', 'string',
-          requires = IS_EMPTY_OR(IS_EMAIL())),
-    Field('email_alt', 'string',
-          comment = "Secondary email address(es), semicolon-separated"),
+    Field('orcid', 'string', unique = True, label = "ORCID", comment = 'ORCID as XXXX-XXXX-XXXX-XXXX'),
+    Field('rorid', 'string', unique = True, label = "ROR", comment = 'ROR as 9 character string'),
+    Field('affiliation', 'list:string', comment = "Affiliation(s)"),
+    Field('email', 'string'),
+    Field('email_alt', 'list:string', comment = "Secondary email address(es)"),
     Field('website', 'string'),
     Field('notes', 'text', comment = "Any other information linked to the person or organisation"),
     auth.signature, 
     format = '%(name)s'
 )
-
+db.personnel.name.requires = IS_NOT_EMPTY()
+# require valid identifier formatting
+db.personnel.orcid.requires = [IS_EMPTY_OR([
+    IS_NOT_IN_DB(db, 'personnel.orcid'),
+    IS_MATCH('^\d{4}(-\d{4}){3}$', error_message='Not a valid ORCID format (expect XXXX-XXXX-XXXX-XXXX)')])] 
+db.personnel.rorid.requires = [IS_EMPTY_OR([
+    IS_NOT_IN_DB(db, 'personnel.rorid'), 
+    IS_MATCH('^[A-Za-z0-9]{9}$', error_message='Not a valid ROR format (expect 9-character alphanumeric string)')])] 
+db.personnel.email.requires = IS_EMPTY_OR(IS_EMAIL())
+db.personnel.email_alt.requires = IS_EMPTY_OR(IS_LIST_OF(IS_EMAIL()))
+# Show as link
+db.personnel.email.represent = lambda val, row: None if val is None else A(val, _href="mailto:" + val, _target="_blank")
+db.personnel.orcid.represent = lambda val, row: None if val is None else A(val, _href="https://orcid.org/" + val, _target="_blank")
+db.personnel.rorid.represent = lambda val, row: None if val is None else A(val, _href="https://ror.org/" + val, _target="_blank")
 
 
 
@@ -188,15 +200,14 @@ db.define_table(
     'j_project_personnel',
     Field('project_id', db.project, required = True),
     Field('personnel_id', db.personnel, required = True),
-    Field('role', 'string', required = True,
-        requires = IS_IN_SET(('owner', 'other'))
-    ), 
+    Field('role', 'string', required = True), 
     Field('notes', 'string'),
     auth.signature,
     format = '%(project_id)s %(personnel_id)s' 
 )
-db.j_project_personnel._singular = "Project Personnel"
-db.j_project_personnel._plural = "Project Personnel"
+db.j_project_personnel.role.requires = IS_IN_SET(('Owner', 'Other'))
+db.j_project_personnel._singular = "Project personnel"
+db.j_project_personnel._plural = "Project personnel"
 
 
 ### ONE (project) TO MANY (dataset)
@@ -360,7 +371,6 @@ db.define_table(
     auth.signature,
     format = '%(title)s'
     )
-
 db.accessrequest.title.requires = [IS_NOT_EMPTY()]    
 db.accessrequest.category_access.requires = IS_IN_SET(['Project personnel', 'Data sharing service','Data science service', 'Data training'])
 db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research','Government', 'Teaching', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Other'])
@@ -421,8 +431,7 @@ db.define_table(
     )
 # unique keywords for each thesaurus
 db.keyword.keyword.requires = [
-    IS_NOT_IN_DB(
-        db(db.keyword.thesaurus == request.vars.thesaurus), 'keyword.keyword'), 
+    IS_NOT_IN_DB(db(db.keyword.thesaurus == request.vars.thesaurus), 'keyword.keyword'), 
     IS_NOT_EMPTY()]
 db.keyword.thesaurus.requires = IS_IN_SET(("CARDAT",))
 
