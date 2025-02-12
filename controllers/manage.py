@@ -1,12 +1,27 @@
-import form_helper
-from gluon.custom_import import track_changes
-track_changes(True)
-
 # General table browse with CRUD
 def browse():
     table = request.args(0)
     if not table in db.tables(): redirect(URL('error'))
 
+    # prettify
+    response.title="Browse {}".format(table)
+
+    # add anchor links in sidebar for create, view and edit forms (in hierarchy) 
+    if request.args(-3) in ('view', 'edit') or request.args(-2) == 'new':
+        if request.args(-3) in ('view', 'edit'):
+            table_name = request.args(-2)
+        elif request.args(-2) == 'new':
+            table_name = request.args(-1)
+         # in view/edit/create
+        fields = [f.name for f in db[table_name]]
+        # remove audit fields from display
+        [fields.remove(f) for f in ('id', 'is_active', 'created_on', 'created_by', 'modified_on', 'modified_by') if f in fields]
+
+        field_html_ids = [(f, "_".join([table_name, f, "_row"])) for f in fields]
+        sidebar =  MENU([(fieldname, False, "#"+link) for fieldname, link in field_html_ids])
+
+
+    ## options for smartgrid 
     # show these fields in smartgrid
     fields_to_show = [
             db.project.title, 
@@ -23,7 +38,7 @@ def browse():
             
             db.accessrequest.title, db.accessrequest.date_of_request, db.accessrequest.category_access, db.accessrequest.primary_purpose,
             db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.approval_date,
-            db.accessor.accessrequest_id, db.accessor.cardat_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role,
+            db.accessor.accessrequest_id, db.accessor.cardat_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 
             db.cardat_user.name, db.cardat_user.email, db.cardat_user.orcid,
@@ -59,4 +74,8 @@ def browse():
         showbuttontext = False,
         csv=False, 
         paginate=50)
-    return dict(grid=grid)
+
+    return dict(grid=grid, 
+        left_sidebar_enabled='sidebar' in locals(),
+        left_sidebar=sidebar if 'sidebar' in locals() else None
+        )
