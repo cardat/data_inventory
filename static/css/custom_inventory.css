@@ -1,0 +1,42 @@
+/** general text **/
+.mastheader h1 {
+	font-size: 36px;
+}
+
+/** Style sidebar **/
+.left-sidebar {
+	position: sticky;
+	top: 10vh;
+	background-color: #efefef;
+	font-size: small;
+	white-space: normal;
+	
+}
+.left-sidebar li {
+	list-style-type: none;
+}
+
+/** Style grid table **/
+.web2py_grid .web2py_form table {
+	table-layout:fixed;
+	width: 100%;
+	
+	tr td.w2p_fw {
+		width: 70%;
+	}
+	tr td.w2p_fl {
+		width: 10%;
+	}
+	tr td.w2p_fl > label {
+		white-space: normal;
+		overflow-wrap: break-word;
+	}
+}
+
+[type="text"], [type="password"], select {
+  width: 95%;
+}
+
+.web2py_grid .web2py_form table tr td.w2p_fl label {
+	text-align: right;
+}

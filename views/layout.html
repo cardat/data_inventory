@@ -46,6 +46,8 @@
   response.files.insert(2,URL('static','css/bootstrap-responsive.min.css'))
   response.files.insert(3,URL('static','css/web2py_bootstrap.css'))
   }}
+  
+  {{ response.files.append(URL('static', 'css/custom_inventory.css')) }}
 
   {{include 'web2py_ajax.html'}}
 
@@ -106,7 +108,7 @@
 
     <section id="main" class="main row">
         {{if left_sidebar_enabled:}}
-        <div class="span2 left-sidebar">
+        <div class="span3 left-sidebar">
             {{block left_sidebar}}
             <h3>Left Sidebar</h3>
             <p></p>
