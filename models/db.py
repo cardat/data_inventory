@@ -444,3 +444,17 @@ db.define_table(
 )
 db.j_dataset_keyword._singular = "Dataset Keyword"
 db.j_dataset_keyword._plural = "Dataset Keywords"
+
+# DATASET LINKAGES ####
+
+db.define_table(
+    'dataset_linkage',
+    Field('parent_dataset', db.dataset, required = True, notnull=True),
+    Field('child_dataset', db.dataset, required = True, notnull=True),
+    Field('linkage', 'string', comment = 'Parent-child relationship of dataset', notnull=True),
+    auth.signature,
+    format = '%(linkage)s: %(parent_dataset)s -> %(child_dataset)s'
+    )
+db.dataset_linkage.linkage.requires = IS_IN_SET(("Subset", "Extraction", "Derivation"))
+db.dataset_linkage.child_dataset.requires = IS_IN_DB(db(db.dataset.id != request.post_vars.parent_dataset),
+                            'dataset.id', db.dataset._format)

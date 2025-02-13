@@ -33,6 +33,7 @@ def browse():
             db.intellectualright.licence_code,
             db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.link,
             db.j_dataset_keyword.dataset_id, db.j_dataset_keyword.keyword_id,
+            db.dataset_linkage.parent_dataset, db.dataset_linkage.child_dataset, db.dataset_linkage.linkage,
 
             db.attr.variable_name, db.attr.units,
             
