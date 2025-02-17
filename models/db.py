@@ -331,8 +331,8 @@ db.j_dataset_personnel._plural = "Dataset personnel"
 # equivalent of a 'resource' in other metadata schemas
 db.define_table(
       'entity',
-Field('dataset_id', db.dataset, notnull=True),
-Field('entityname','string', comment = "The file name, name of database table, etc. It should identify the entity in the dataset. Example: SpeciesAbundance1996.csv", requires = IS_NOT_EMPTY()),
+Field('dataset_id', db.dataset, required = True, notnull=True),
+Field('entityname','string', required = True, comment = "The file name, name of database table, etc. It should identify the entity in the dataset. Example: SpeciesAbundance1996.csv", requires = IS_NOT_EMPTY()),
 Field('entitytype', 'string', comment = "General format of the data"),
 Field('entitydescription', 'string', comment = "Text generally describing the content of the entity."),
 Field('physical_distribution', 'string',
@@ -348,15 +348,18 @@ format = '%(entityname)s'
 # Attributes of entities
 db.define_table(
     'attr',
-    Field('entity_id', db.entity, notnull=True),
-    Field('variable_name', 'string', comment = 'The name of the variable'),
+    Field('entity_id', db.entity, required = True, notnull=True),
+    Field('variable_name', 'string', required = True, comment = 'The name of the variable'),
     Field('variable_definition', 'string', comment = 'Definition of the variable.'),
-    Field('measurement_scales', 'string', comment = 'One of nominal, ordinal, interval, ratio or datetime', requires = IS_IN_SET(['nominal', 'ordinal', 'interval', 'ratio', 'datetime'])),
+    Field('measurement_scales', 'string', comment = 'One of nominal, ordinal, interval, ratio or datetime'),
     Field('units', 'string', comment = 'Standard Unit of Measurement'),
     Field('value_labels', 'string', comment = 'Factor labels and meaning'),
     auth.signature,
     format = '%(variable_name)s'     
     )
+db.attr.measurement_scales.requires = IS_IN_SET(['nominal', 'ordinal', 'interval', 'ratio', 'datetime'])
+
+
 
 
 
@@ -364,27 +367,28 @@ db.define_table(
 # Unique access requests
 db.define_table(
     'accessrequest',
-    Field('title', 'string', comment = "A short (two or three word) title of the project for which the data are to be used",
-            required = True),
-    Field('date_of_request', 'date', comment = "Date request received by CARDAT.",
-            required = True),
+    Field('title', 'string', required = True, 
+    comment = "A short (two or three word) title of the project for which the data are to be used"),
+    Field('date_of_request', 'date', required = True,
+    comment = "Date request received."),
     Field('description', 'text', comment = "A description of the project for which the data are to be used. Include description of any ethics committee approvals and the intended publication strategy."),
-    Field('category_access', 'text', comment = "Category of access."),
-    Field('primary_purpose', 'string', comment = ""),
+    Field('category_access', 'text', 
+    comment = "Category of access - request is for access to the dataset (Data sharing service), for data wrangling to produce a dataset (Data science service), for working on the dataset/project itself (Project personnel) or for training purposes (Training)"),
+    Field('primary_purpose', 'string', comment = "Sector from which request is made - choose the most appropriate"),
     Field('other_info', 'text', comment = "Additional info or notes"),
     auth.signature,
     format = '%(title)s'
     )
 db.accessrequest.title.requires = [IS_NOT_EMPTY()]    
 db.accessrequest.category_access.requires = IS_IN_SET(['Project personnel', 'Data sharing service','Data science service', 'Data training'])
-db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research','Government', 'Teaching', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Other'])
+db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research', 'Government', 'Training', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Other'])
 
 # Link access request to dataset
 db.define_table(
     'request_dataset',
-    Field('accessrequest_id', db.accessrequest, notnull=True),
-    Field('dataset_id', db.dataset, notnull=True),
-    Field('approval_date', 'date', comment = "Date request approved", required = True),
+    Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
+    Field('dataset_id', db.dataset, required = True, notnull=True),
+    Field('approval_date', 'date', required = True, comment = "Date request approved"),
     Field('approval_documentation', 'string', comment = 'Location of record of approval'),
     auth.signature,
     format = '%(accessrequest_id)s - %(dataset_id)s'
@@ -394,30 +398,35 @@ db.define_table(
 # record of outputs from access requests
 db.define_table(
     'request_output',
-    Field('accessrequest_id', db.accessrequest, notnull=True),
-    Field('output_category', 'string', requires = IS_IN_SET(["Journal Article", "Dataset", "Report", "Media Article", "Thesis", "Other"])),
-    Field('link', 'string', comment = "DOI where possible.'"),
-    Field('title', 'string'),
+    Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
+    Field('title', 'string', required = True),
     Field('author', 'string'),
-    Field('publication', 'string', comment = 'Journal, data portal/repository, book, newspaper, etc.'),
+    Field('output_category', 'string', comment = "Type of output - conference/journal paper, dataset, report, thesis, etc."),
+    Field('publication', 'string', comment = 'Specific output type, e.g. book, newspaper, etc.'),
     Field('publication_date', 'date'),
+    Field('link', 'string', comment = "URL link to output if exists - DOI or similar permanent link where possible.'"),
     Field('status', 'string', default = "Pending"),
     Field('additional_notes', 'text', comment = 'Additional notes about output'),
     auth.signature,
     format = '%(title)s'
     )
+db.request_output.requires = IS_IN_SET(["Journal Article", "Dataset", "Report", "Media Article", "Thesis", "Other"])
 db.request_output.status.requires = IS_IN_SET(['Unknown (lapsed)', 'No output', 'Pending', 'Published'])
 db.request_output.status.link = IS_EMPTY_OR(IS_URL())
+
+# show link as link
+db.request_output.link.represent = lambda val, row: None if val is None else A(val, _href=val, _target="_blank")
 
 # MANY (accessors) TO ONE (accessrequest)
 # Persons that are part of the access request
 db.define_table(
     'accessor',
-    Field('accessrequest_id', db.accessrequest, notnull=True),
-    Field('cardat_user_id', db.cardat_user, notnull=True),
-    Field('begin_date', 'date', comment = "Access granted on this date (direct access)"),
-    Field('end_date', 'date', comment = "Access revoked on this date (direct access)"),
-    Field('key_contact', 'boolean', comment = "Study lead or contact person for request. Typically one person per request but may be multiple (e.g. study lead and data analyst)."),
+    Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
+    Field('cardat_user_id', db.cardat_user, required = True, notnull=True),
+    Field('begin_date', 'date', comment = "Access granted via CARDAT repo on this date"),
+    Field('end_date', 'date', comment = "Access revoked via CARDAT repo on this date"),
+    Field('key_contact', 'boolean', default = True, 
+        comment = "Study lead or contact person for request. Typically one person per request but may be multiple (e.g. study lead and data analyst)."),
     Field('role', 'string', comment = "The role that this person will have in the project, specifically in relation to the data."),
     Field('role_description', 'text', comment = "Description of the role."),
     auth.signature,
@@ -447,8 +456,8 @@ db.define_table(
     auth.signature,
     format = '%(dataset_id)s: %(keyword_id)s'
 )
-db.j_dataset_keyword._singular = "Dataset Keyword"
-db.j_dataset_keyword._plural = "Dataset Keywords"
+db.j_dataset_keyword._singular = "Dataset keyword"
+db.j_dataset_keyword._plural = "Dataset keywords"
 
 
 
@@ -462,6 +471,6 @@ db.define_table(
     auth.signature,
     format = '%(linkage)s: %(parent_dataset)s -> %(child_dataset)s'
     )
-db.dataset_linkage.linkage.requires = IS_IN_SET(("Subset", "Extraction", "Derivation"))
+db.dataset_linkage.linkage.requires = IS_IN_SET(("Subset/Extraction", "Derivation"))
 db.dataset_linkage.child_dataset.requires = IS_IN_DB(db(db.dataset.id != request.post_vars.parent_dataset),
                             'dataset.id', db.dataset._format)
