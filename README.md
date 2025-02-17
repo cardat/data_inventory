@@ -1,6 +1,6 @@
 CARDAT Data Inventory
 ================
-2025-02-12
+2025-02-17
 
 ## About
 
@@ -32,6 +32,8 @@ concurrent access by a team.
 
 ## General database structure
 
+![](static/images/CARDAT_tbl_relation.png)
+
 ### Dataset metadata
 
 The inventory uses a hierarchical structure project-dataset-entity,
@@ -53,7 +55,7 @@ attributes (`attr`, variable descriptions) attached.
     │   │   ├── j_dataset_keyword     -> to keyword
     │   │   ├── j_dataset_personnel   -> to personnel
     │   │   ├── j_request_dataset     -> to accessrequest
-    │   │   ├── dataset_linkage       -> to self-referential dataset
+    │   │   ├── dataset_linkage       -> to 2 datasets
 
 The `dataset` level is the centre of the inventory structure. Further
 tables are attached to each `dataset` to describe the:
@@ -95,7 +97,7 @@ article) from an `accessrequest` can be put into a linked
     │   ├── accessor            -> to cardat_user
     │   ├── j_request_dataset   -> to dataset
 
-## Roadmap for Python 3
+## For investigation
 
 1.  Investigate port to py4web (successor to web2py - [GitHub
     link](https://github.com/web2py/py4web))

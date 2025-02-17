@@ -28,6 +28,8 @@ The **web2py** app can run as simple standalone desktop app using an SQLite data
 
 ## General database structure
 
+![](static/images/CARDAT_tbl_relation.png)
+
 ### Dataset metadata
 
 The inventory uses a hierarchical structure project-dataset-entity, where `project` is a large overarching program/project containing one or more `dataset`s. Each dataset has a defined study focus, temporal and spatial range. For a dataset, one or more `entity`(ies) may be described, each representing (typically) a file. An `entity` can have attributes (`attr`, variable descriptions) attached.
@@ -45,8 +47,7 @@ The inventory uses a hierarchical structure project-dataset-entity, where `proje
 │   │   ├── j_dataset_keyword     -> to keyword
 │   │   ├── j_dataset_personnel   -> to personnel
 │   │   ├── j_request_dataset     -> to accessrequest
-│   │   ├── dataset_linkage       -> to self-referential dataset
-
+│   │   ├── dataset_linkage       -> to 2 datasets
 ```
 
 The `dataset` level is the centre of the inventory structure. Further tables are attached to each `dataset` to describe the:
