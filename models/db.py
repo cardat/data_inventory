@@ -109,8 +109,8 @@ db.cardat_user.orcid.requires = [IS_EMPTY_OR([
     IS_NOT_IN_DB(db, 'cardat_user.orcid'),
     IS_MATCH('^\d{4}(-\d{4}){3}$', error_message='Not an ORCID format')])] 
 db.cardat_user.website.requires = [IS_EMPTY_OR(IS_URL())]
-db.cardat_user.email.requires = IS_EMPTY_OR(IS_EMAIL())
-db.cardat_user.email_alt.requires = IS_EMPTY_OR(IS_LIST_OF(IS_EMAIL()))
+db.cardat_user.email.requires = IS_EMAIL()
+db.cardat_user.email_alt.requires = IS_LIST_OF(IS_EMAIL())
 
 # Show as link
 db.cardat_user.email.represent = lambda val, row: None if val is None else A(val, _href="mailto:" + val, _target="_blank")
@@ -150,8 +150,8 @@ db.personnel.orcid.requires = [IS_EMPTY_OR([
 db.personnel.rorid.requires = [IS_EMPTY_OR([
     IS_NOT_IN_DB(db, 'personnel.rorid'), 
     IS_MATCH('^[A-Za-z0-9]{9}$', error_message='Not a valid ROR format (expect 9-character alphanumeric string)')])] 
-db.personnel.email.requires = IS_EMPTY_OR(IS_EMAIL())
-db.personnel.email_alt.requires = IS_EMPTY_OR(IS_LIST_OF(IS_EMAIL()))
+db.personnel.email.requires = IS_EMAIL()
+db.personnel.email_alt.requires = IS_LIST_OF(IS_EMAIL())
 db.personnel.website.requires = [IS_EMPTY_OR(IS_URL())]
 
 # Show as link
@@ -245,7 +245,7 @@ db.define_table(
     # methodology
     Field('methods_protocol' , 'text', comment = 'The protocol field is used to either reference a protocol citation or describe the methods that were prescribed to define a study or dataset. Note that the protocol is intended to be used to document a prescribed procedure which may or may not have been performed (see Method Steps).'),
     Field('sampling_desc' ,'text', comment = 'Similar to a description of sampling procedures found in the methods section of a journal article.'),
-    Field('method_steps','text', comment=XML(T('Each method step to implement the measurement protocols and set up the study. Note that the method is used to describe procedures that were actually performed. The method may have diverged from the protocol purposefully, or perhaps incidentally, but the procedural lineage is still preserved and understandable. %s', A('More', _href=XML(URL('static', 'index.html',  anchor='sec-5-2-11', scheme=True, host=True)))))),
+    Field('method_steps','text', comment='Each method step to implement the measurement protocols and set up the study. Note that the method is used to describe procedures that were actually performed. The method may have diverged from the protocol purposefully, or perhaps incidentally, but the procedural lineage is still preserved and understandable'),
     # other
     Field('additional_info','text', comment = 'Additional information'),
     Field('publisher','string', comment = 'The publisher of this data set (e.g. repository, publishing house, any institution making the data available)'),
@@ -306,6 +306,8 @@ db.define_table(
     auth.signature,
     format = '%(title)s'
     )
+db.dataset_publication._singular = "Publication"
+db.dataset_publication._plural = "Publications"
 db.dataset_publication.title.requires = IS_NOT_EMPTY()
 db.dataset_publication.link.requires = IS_EMPTY_OR(IS_URL())
 
@@ -318,7 +320,8 @@ db.define_table(
     Field('dataset_id', db.dataset, required = True, notnull=True),
     Field('personnel_id', db.personnel, required = True, notnull=True),
     Field('role', 'string', required = True), 
-    Field('notes', 'string'),
+    Field('role_description', 'string'),
+    Field('notes', 'text'),
     auth.signature,
     format = 'Dataset %(dataset_id)s personnel %(personnel_id)s' 
 )
@@ -339,9 +342,13 @@ Field('physical_distribution', 'string',
 comment= 'Information required for retrieving the resource.'),
 Field('physical_distribution_additionalinfo', 'text',
 comment= 'Additional Information about the storage of the resource, including backup regime.'),
+Field('entity_temporalcoverage_daterange','string', comment = "A text description of the temporal range that events were observed on"),
+Field('entity_methods', 'text', comment = "Information on the specific methods used to collect information in this entity."),
+Field('numberofrecords', 'integer', comment = 'The number of rows in a table.'),
 auth.signature,
 format = '%(entityname)s'
 )
+db.entity.entityname.requires = IS_NOT_EMPTY()
 
 # Entity attributes
 #### ONE (entity) TO MANY (attributes/variables)
@@ -357,6 +364,7 @@ db.define_table(
     auth.signature,
     format = '%(variable_name)s'     
     )
+db.attr.variable_name.requires = IS_NOT_EMPTY()
 db.attr.measurement_scales.requires = IS_IN_SET(['nominal', 'ordinal', 'interval', 'ratio', 'datetime'])
 
 
@@ -423,31 +431,33 @@ db.define_table(
     'accessor',
     Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
     Field('cardat_user_id', db.cardat_user, required = True, notnull=True),
-    Field('begin_date', 'date', comment = "Access granted via CARDAT repo on this date"),
-    Field('end_date', 'date', comment = "Access revoked via CARDAT repo on this date"),
+    Field('begin_date', 'date', comment = "Access granted via CARDAT repository on this date"),
+    Field('end_date', 'date', comment = "Access revoked via CARDAT repository on this date"),
     Field('key_contact', 'boolean', default = True, 
-        comment = "Study lead or contact person for request. Typically one person per request but may be multiple (e.g. study lead and data analyst)."),
-    Field('role', 'string', comment = "The role that this person will have in the project, specifically in relation to the data."),
-    Field('role_description', 'text', comment = "Description of the role."),
+        comment = "Study lead or contact person for request. Typically one person per request but may be multiple (e.g. study lead and data analyst)"),
+    Field('role', 'string', comment = "The role that this person will have in the project, specifically in relation to the data"),
+    Field('role_description', 'text', comment = "Further description of the role"),
     auth.signature,
     format = '%(cardat_user_id)s'
 )
-
+db.accessor.role.widget = SQLFORM.widgets.autocomplete(
+     request, db.accessor.role, limitby=(0, 10), min_length=2, distinct = True)
 
 # KEYWORDS ####
 # tags for datasets
 db.define_table(
     'keyword',
-    Field('thesaurus', required = True, default = "CARDAT"),
+    Field('thesaurus', required = True, default = "Collections", comment = "Source thesaurus of keywords"),
     Field('keyword', 'string', required = True),
     auth.signature,
     format = '%(thesaurus)s: %(keyword)s'
     )
+db.keyword.thesaurus.widget = SQLFORM.widgets.autocomplete(
+    request, db.keyword.thesaurus, limitby=(0, 10), min_length=2, distinct = True)
 # unique keywords for each thesaurus
 db.keyword.keyword.requires = [
     IS_NOT_IN_DB(db(db.keyword.thesaurus == request.vars.thesaurus), 'keyword.keyword'), 
     IS_NOT_EMPTY()]
-db.keyword.thesaurus.requires = IS_IN_SET(("CARDAT",))
 
 db.define_table(
     'j_dataset_keyword',
@@ -456,8 +466,8 @@ db.define_table(
     auth.signature,
     format = '%(dataset_id)s: %(keyword_id)s'
 )
-db.j_dataset_keyword._singular = "Dataset keyword"
-db.j_dataset_keyword._plural = "Dataset keywords"
+db.j_dataset_keyword._singular = "Dataset-keyword"
+db.j_dataset_keyword._plural = "Dataset-keyword"
 
 
 
