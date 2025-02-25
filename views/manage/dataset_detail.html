@@ -1,0 +1,38 @@
+{{extend 'layout.html'}}
+
+{{block left_sidebar}}
+	{{=left_sidebar}}
+{{end}}
+
+{{block right_sidebar}}
+	{{=right_sidebar}}
+{{end}}
+
+<h4 id='h-dataset'>Dataset metadata</h4>
+{{if form:}}
+    {{=form}}
+{{pass}}
+
+
+<h4 id='h-personnel'>Personnel</h4>
+{{if len(rows_personnel) != 0: }}
+	{{=rows_personnel}}
+{{else: }}
+<p><strong>No personnel attached.</strong></p>
+{{pass}}
+
+<h4 id='h-licencing'>Licencing</h4>
+{{if len(rows_licence) != 0: }}
+	{{=rows_licence}}
+{{else: }}
+<p><strong>No licence attached.</strong></p>
+{{pass}}
+
+<h4 id='h-accessrequests'>Access requests</h4>
+{{if len(rows_accessrequests) != 0: }}
+	{{=rows_accessrequests}}
+{{else: }}
+<p><strong>No access requests attached.</strong></p>
+{{pass}}
+
+ 

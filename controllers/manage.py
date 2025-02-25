@@ -32,6 +32,8 @@ def browse():
             db.entity.entityname, db.entity.physical_distribution,
             db.intellectualright.licence_code,
             db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.link,
+            
+            db.keyword.thesaurus, db.keyword.keyword,
             db.j_dataset_keyword.dataset_id, db.j_dataset_keyword.keyword_id,
             db.dataset_linkage.parent_dataset, db.dataset_linkage.child_dataset, db.dataset_linkage.linkage,
 
@@ -64,7 +66,6 @@ def browse():
             'j_project_personnel', 'dataset', # child tables of project
             'j_dataset_personnel', 'entity', 'intellectualright', 'dataset_publication', 'j_dataset_keyword', # child tables of dataset
             'attr', # child table of entity
-
             'accessor', 'request_output', 'request_dataset' # child tables of accessrequest
             ],
         fields = fields_to_show,
@@ -80,3 +81,43 @@ def browse():
         left_sidebar_enabled='sidebar' in locals(),
         left_sidebar=sidebar if 'sidebar' in locals() else None
         )
+
+def dataset_detail():
+    dset_id = request.args[0]
+    if not dset_id in db.dataset.id: redirect(URL('error'))
+
+    form = SQLFORM(db.dataset, record=dset_id, readonly=True, comments = False)
+    # form_licence = SQLFORM(db.intellectualright, record=dset_id, readonly=True, comments = False)
+
+    rows_licence = SQLTABLE(db(db.intellectualright.dataset_id == dset_id).select(
+        db.intellectualright.id, db.intellectualright.licence_code),
+    headers='fieldname:capitalize')
+
+    rows_personnel = SQLTABLE(db(db.j_dataset_personnel.dataset_id == dset_id).select(
+        db.j_dataset_personnel.id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role),
+    headers='fieldname:capitalize')
+    
+    rows_accessrequests = SQLTABLE(db(db.request_dataset.dataset_id == dset_id).select(
+        db.request_dataset.id, db.request_dataset.accessrequest_id),
+    headers='fieldname:capitalize')
+
+    # row = db.dataset(db.dataset.id == dset_id).select()
+    # print(row)
+    
+    sidebar =  MENU([('Dataset details', False, '#h-dataset'),
+    ('Personnel', False, '#h-personnel'),
+    ('Licencing', False, '#h-licencing'),
+    ('Access requests', False, '#h-accessrequests')]
+    )
+    # prettify
+    # response.title="Details of dataset '{}'".format(shortname)
+    
+    return dict(
+        form=form,
+        rows_licence = rows_licence,
+        rows_personnel = rows_personnel,
+        rows_accessrequests = rows_accessrequests,
+        left_sidebar_enabled='sidebar' in locals(),
+        left_sidebar=sidebar if 'sidebar' in locals() else None
+    )
+    
