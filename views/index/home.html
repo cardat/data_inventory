@@ -7,14 +7,11 @@
   {{if auth.is_logged_in():}}
 	<ol>
 	<li>{{=XML(T('The main tool for managing research projects (umbrella grouping of datasets) is at %s',
-             A('%(application)s/forms/manage_projects/'%request,
-           _href=URL('forms','manage_projects'))))}}</li>
+             A('%(application)s/manage/browse/project/'%request,
+           _href=URL(c='manage', f='browse', args='project'))))}}</li>
     <li>{{=XML(T('The main tool for managing datasets is at %s',
-           A('%(application)s/forms/manage_datasets/'%request,
-             _href=URL('forms','manage_datasets'))))}}</li>
-	<li>{{=XML(T('The technical documentation for this application is at %s',
-             A('this link',
-           _href=URL('static','index.html'), _target='new')))}}</li>
+           A('%(application)s/manage/browse/dataset/'%request,
+             _href=URL(c='manage', f='browse', args='dataset'))))}}</li>
 </ol>
   {{elif 'content' in globals():}}
 	{{=content}}

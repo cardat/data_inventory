@@ -23,7 +23,9 @@ response.google_analytics_id = None
 #########################################################################
 
 response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
-                 [('Quick Access'), False, URL('goto')], 
+                 [('Quick Access'), False, URL(c='quick_access', f='jump'),
+                    [(('Duplicate a Dataset'), False, URL(c='quick_access', f='duplicate_dataset'))]
+                 ], 
                  [('Manage Data'), False, URL(c='manage', f='browse', args='dataset'), 
                     [(('Projects'), False, URL(c='manage', f='browse', args='project')),
                      (('Datasets'), False, URL(c='manage', f='browse', args='dataset')),
