@@ -24,7 +24,9 @@ response.google_analytics_id = None
 
 response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
                  [('Quick Access'), False, URL(c='quick_access', f='jump'),
-                    [(('Duplicate a Dataset'), False, URL(c='quick_access', f='duplicate_dataset'))]
+                    [(('Jump to View or Edit'), False, URL(c='quick_access', f='jump')),
+                     (('Duplicate a Dataset'), False, URL(c='quick_access', f='duplicate_dataset')),
+                     (('Add User as Data Personnel'), False, URL(c='quick_access', f='add_user_as_personnel'))]
                  ], 
                  [('Manage Data'), False, URL(c='manage', f='browse', args='dataset'), 
                     [(('Projects'), False, URL(c='manage', f='browse', args='project')),
