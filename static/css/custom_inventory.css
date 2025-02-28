@@ -3,6 +3,18 @@
 	font-size: 36px;
 }
 
+/** shrink margin to remove whitespace **/
+#header {
+	margin-top: 15px;
+}
+
+/** make top navbar sticky **/
+div.navbar {
+	position: sticky;
+	top:0vh;
+	z-index:100;
+}
+
 /** Style sidebar **/
 .left-sidebar {
 	position: sticky;
@@ -10,7 +22,8 @@
 	background-color: #efefef;
 	font-size: small;
 	white-space: normal;
-	
+	padding-top: 5px;
+	outline: thin solid #778899;
 }
 .left-sidebar li {
 	list-style-type: none;

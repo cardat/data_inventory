@@ -17,7 +17,7 @@ def jump():
         table_name = "edit_project"
     )
     if form_edit_project.process().accepted:
-        redirect(URL(c='manage', f='browse', args=('project', 'edit ', 'project', form_edit_project.vars.edit_project), 
+        redirect(URL(c='manage', f='browse', args=('project', 'edit', 'project', form_edit_project.vars.edit_project), 
             user_signature=True))
 
     # Jump to edit dataset
