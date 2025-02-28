@@ -39,15 +39,15 @@ response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
                  [('Manage Access'), False, URL(c='manage', f='browse', args='accessrequest'),
                     [(('Users'), False, URL(c='manage', f='browse', args='cardat_user')),
                     (('Access Requests'), False, URL(c='manage', f='browse', args='accessrequest')),
-                    (('Request Accessors'), False, URL(c='manage', f='browse', args='accessor')),
+                    (('Accessors by Request'), False, URL(c='manage', f='browse', args='accessor')),
                     (('Request Outputs'), False, URL(c='manage', f='browse', args='request_output')),
-                    (('Approvals'), False, URL(c='manage', f='browse', args='request_dataset'))
+                    (('Dataset Access Approvals'), False, URL(c='manage', f='browse', args='request_dataset'))
                     ]
                  ],
-                 ['Statistics', False, URL(c = 'audit', f = 'stats'),
-                    [('Audit', False, URL(c = 'audit', f = 'audit'))]
-                 ],
-                 ['Documentation', False, XML(URL('static','index.html', scheme=True, host=True))],
+                 # ['Statistics', False, URL(c = 'audit', f = 'stats'),
+                 #    [('Audit', False, URL(c = 'audit', f = 'audit'))]
+                 # ],
+                 ['Documentation', False, URL(c='index', f='guide')],
                  ]
 
 DEVELOPMENT_MENU = True

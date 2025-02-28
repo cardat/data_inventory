@@ -150,7 +150,7 @@ db.personnel.orcid.requires = [IS_EMPTY_OR([
 db.personnel.rorid.requires = [IS_EMPTY_OR([
     IS_NOT_IN_DB(db, 'personnel.rorid'), 
     IS_MATCH('^[A-Za-z0-9]{9}$', error_message='Not a valid ROR format (expect 9-character alphanumeric string)')])] 
-db.personnel.email.requires = IS_EMAIL()
+db.personnel.email.requires = IS_EMPTY_OR(IS_EMAIL())
 db.personnel.email_alt.requires = IS_LIST_OF(IS_EMAIL())
 db.personnel.website.requires = [IS_EMPTY_OR(IS_URL())]
 

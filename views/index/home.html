@@ -3,16 +3,55 @@
 {{extend 'layout.html'}}
   
 
-  <h4>{{=T('Instructions')}}</h4>
+  <h4>{{=T('Quick Start')}}</h4>
   {{if auth.is_logged_in():}}
-	<ol>
+	<ul>
 	<li>{{=XML(T('The main tool for managing research projects (umbrella grouping of datasets) is at %s',
              A('%(application)s/manage/browse/project/'%request,
            _href=URL(c='manage', f='browse', args='project'))))}}</li>
     <li>{{=XML(T('The main tool for managing datasets is at %s',
            A('%(application)s/manage/browse/dataset/'%request,
              _href=URL(c='manage', f='browse', args='dataset'))))}}</li>
-</ol>
+	<br/>
+	<li>{{=XML(T('The main tool for managing access requests is at %s',
+           A('%(application)s/manage/browse/accessrequest/'%request,
+             _href=URL(c='manage', f='browse', args='accessrequest'))))}}</li>
+	<li>{{=XML(T('The main tool for managing repository users is at %s',
+           A('%(application)s/manage/browse/cardat_user/'%request,
+             _href=URL(c='manage', f='browse', args='cardat_user'))))}}</li>
+	</ul>
+	<br/>
+	
+	<h5>{{=T('I would like to...')}}</h5>
+  <ul>
+	<li><strong>...manage data</strong>
+		<ul>
+			<li><strong>Browse personnel records for projects or datasets</strong>: Go to <em>Manage Data > Data Personnel</em></li>
+			<li><strong>Browse publications relating to datasets</strong>: Go to <em>Manage Data > Publications</em></li>
+			<li><strong>Browse keywords for tagging datasets</strong>: Go to <em>Manage Data > Keywords</em></li>
+			<li><strong>Browse linkages between datasets</strong>: Go to <em>Manage Data > Dataset Linkages</em></li>
+		</ul>
+	</li>
+	<br/>
+	<li><strong>...manage access</strong>
+		<ul>
+			<li><strong>Browse all repository users</strong>: Go to <em>Manage Access > Users</em></li>
+			<li><strong>Browse access requests</strong>: Go to <em>Manage Access > Access Requests</em></li>
+			<li><strong>Browse combined access requests and attached users/roles</strong>: Go to <em>Manage Access > Accessors by Request</em></li>
+			<li><strong>Browse all request outputs</strong>: Go to <em>Manage Access > Request Outputs</em></li>
+			<li><strong>Browse access requests with requested datasets and manage approvals</strong>: Go to <em>Manage Access > Dataset Access Approvals</em></li>
+		</ul>
+	</li>
+	<br/>
+	<li><strong>...quickly view a known dataset record</strong>: Go to <em>Quick Access > Jump to View or Edit</em></li>
+	<li><strong>...quickly edit a known project, dataset, personnel or user record</strong>: Go to <em>Quick Access > Jump to View or Edit</em></li>
+	<li><strong>...duplicate a dataset record</strong>: Go to <em>Quick Access > Duplicate a dataset</em></li>
+	<li><strong>...copy a repository user record to a personnel record</strong>: Go to <em>Quick Access > Add User as Data Personnel</em></li>
+  </ul>
+
+  <hr>
+  <p>See the {{=A('Guide', _href=URL(c='index', f='guide')) }} for further details of the inventory structure.</p>
+  
   {{elif 'content' in globals():}}
 	{{=content}}
   {{else:}}

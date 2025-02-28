@@ -1,0 +1,42 @@
+{{extend 'layout.html'}}
+
+  {{if auth.is_logged_in():}}
+  <h4>{{=T("Structure")}}</h4>,
+  {{=IMG(_src=URL("static/images", "CARDAT_tbl_relation.png"), _alt = "CARDAT table relationships")}}
+
+  <h4>{{=T("Guide to Usage")}}</h4>
+  <p>The data inventory is primarily divided into two sections - one for managing data assets and one for managing access and usage of data. It is suitable for managing a directory of data sources as well as for the inventory/management of a data repository.</p>
+  <p>The central structure of the inventory of data assets is inspired by the 
+  {{=A('Ecological Metadata Language', _href='https://eml.ecoinformatics.org/')}} and uses a project-dataset-entity tree structure. Datasets (<em>dataset</em>) are the key focus - each dataset record has an abstract and description of methods and study extent, and importantly has a record of licencing attached (<em>intellectualright</em>) and personnel (<em>personnel</em>) involved, particularly the data owner or creator (<em>j_dataset_personnel</em>). Methodology which has been published (e.g. described in a journal paper) can also be attached to a dataset (<em>dataset_publication</em>). Datasets can contain one or more entities (<em>entity</em>) which are typically files or code repositories. In turn, one or more datasets can be grouped into an overarching project (<em>project</em>), typically defined by the intended outcome and funding source.</p>
+  <p>Additional helper information for dataset can be added with keyword tags (<em>j_dataset_keyword</em>) and linkages between datasets (<em>dataset_linkage</em>), describing parent-child relationships between datasets as, for example, a subset or derivation.</p>
+  
+
+  <p>Entities can be further described with attributes (<em>attr</em>), which detail the variables available within an entity.</p>
+  <p>Access requests for datasets are separatedly recorded. A request is defined by a specific purpose of dataset usage and expected outcome, such as a PM2.5 and mortality study, which requests access to a PM2.5 CTM surfaces dataset and a mortality dataset. Attached to the access request (<em>accessrequest</em>) are the people involved in the study and their roles (<em>accessor</em>), the expected outputs (<em>request_output</em>), and the datasets requested and approval status (<em>request_dataset</em>). A unique record of individuals is held in a user table (<em>repo_user</em>).</p>
+  
+  <h4>{{=T("Step-by-step guide")}}</h4>
+  <h5>{{=T("Adding a new dataset")}}</h5>
+  <ol>
+	<li>Add personnel (these may be individuals or organisations who were involved in the creation of a project or dataset) to the personnel table (<em>Manage Data > Data Personnel</em>)
+	<ul>
+		<li>A name is required, but it is preferred to also add an ORCID (for individuals) or ROR (for organisations) for unique identification</li>
+		<li>An alternative name can be provided (for example, an organisation may have a common abbreviation, or a person a shortened, anglicised or nickname)</li>
+		<li>Also add email(s) and affiliation(s) if known</li>
+		<li>A website may be added (more relevant for organisations - typically a home page)</li>
+	</ul>
+	<li>If the overarching project does not yet exist, add a new project.</li>
+	<ul>
+		<li>Describe the general project context and aim in the Abstract</li>
+		<li>Describe the overall study extent</li>
+		<li>Add funding information if known and year of project establishment</li>
+	</ul>
+	<li>Add a new dataset under the appropriate project, giving a brief description of abstract, study extent and recording the contact details. Also identify the publication status.</li>
+    <li></li>
+  </ol>  
+  
+  {{elif 'content' in globals():}}
+	{{=content}}
+  {{else:}}
+  <li>{{=T('To use the data inventory please register in top right corner.')}}</li>
+	{{=BEAUTIFY(response._vars)}}
+  {{pass}}
