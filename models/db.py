@@ -91,7 +91,7 @@ use_janrain(auth, filename='private/janrain.key')
 # USERS ####
 # CARDAT user record, person's details for access records
 db.define_table(
-    'cardat_user',
+    'repo_user',
     Field('name', 'string', comment = "Full name", required = True, notnull = True),
     Field('name_alt', 'string', comment = "Preferred name or abbreviation"),
     Field('orcid', 'string', unique = True, comment = "Researcher ORCID (https://orcid.org/)"),
@@ -104,18 +104,18 @@ db.define_table(
     auth.signature, 
     format = '%(name)s'
 )
-db.cardat_user.name.requires = IS_NOT_EMPTY()
-db.cardat_user.orcid.requires = [IS_EMPTY_OR([
-    IS_NOT_IN_DB(db, 'cardat_user.orcid'),
+db.repo_user.name.requires = IS_NOT_EMPTY()
+db.repo_user.orcid.requires = [IS_EMPTY_OR([
+    IS_NOT_IN_DB(db, 'repo_user.orcid'),
     IS_MATCH('^\d{4}(-\d{4}){3}$', error_message='Not an ORCID format')])] 
-db.cardat_user.website.requires = [IS_EMPTY_OR(IS_URL())]
-db.cardat_user.email.requires = IS_EMAIL()
-db.cardat_user.email_alt.requires = IS_LIST_OF(IS_EMAIL())
+db.repo_user.website.requires = [IS_EMPTY_OR(IS_URL())]
+db.repo_user.email.requires = IS_EMAIL()
+db.repo_user.email_alt.requires = IS_LIST_OF(IS_EMAIL())
 
 # Show as link
-db.cardat_user.email.represent = lambda val, row: None if val is None else A(val, _href="mailto:" + val, _target="_blank")
-db.cardat_user.orcid.represent = lambda val, row: None if val is None else A(val, _href="https://orcid.org/" + val, _target="_blank")
-db.cardat_user.website.represent = lambda val, row: None if val is None else A(val, _href=val, _target="_blank")
+db.repo_user.email.represent = lambda val, row: None if val is None else A(val, _href="mailto:" + val, _target="_blank")
+db.repo_user.orcid.represent = lambda val, row: None if val is None else A(val, _href="https://orcid.org/" + val, _target="_blank")
+db.repo_user.website.represent = lambda val, row: None if val is None else A(val, _href=val, _target="_blank")
 
 
 # PERSONNEL ####
@@ -430,7 +430,7 @@ db.request_output.link.represent = lambda val, row: None if val is None else A(v
 db.define_table(
     'accessor',
     Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
-    Field('cardat_user_id', db.cardat_user, required = True, notnull=True),
+    Field('repo_user_id', db.repo_user, required = True, notnull=True),
     Field('begin_date', 'date', comment = "Access granted via CARDAT repository on this date"),
     Field('end_date', 'date', comment = "Access revoked via CARDAT repository on this date"),
     Field('key_contact', 'boolean', default = True, 
@@ -438,7 +438,7 @@ db.define_table(
     Field('role', 'string', comment = "The role that this person will have in the project, specifically in relation to the data"),
     Field('role_description', 'text', comment = "Further description of the role"),
     auth.signature,
-    format = '%(cardat_user_id)s'
+    format = '%(repo_user_id)s'
 )
 db.accessor.role.widget = SQLFORM.widgets.autocomplete(
      request, db.accessor.role, limitby=(0, 10), min_length=2, distinct = True)

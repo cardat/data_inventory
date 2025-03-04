@@ -17,8 +17,8 @@
            A('%(application)s/manage/browse/accessrequest/'%request,
              _href=URL(c='manage', f='browse', args='accessrequest'))))}}</li>
 	<li>{{=XML(T('The main tool for managing repository users is at %s',
-           A('%(application)s/manage/browse/cardat_user/'%request,
-             _href=URL(c='manage', f='browse', args='cardat_user'))))}}</li>
+           A('%(application)s/manage/browse/repo_user/'%request,
+             _href=URL(c='manage', f='browse', args='repo_user'))))}}</li>
 	</ul>
 	<br/>
 	
@@ -39,7 +39,7 @@
 			<li><strong>Browse access requests</strong>: Go to <em>Manage Access > Access Requests</em></li>
 			<li><strong>Browse combined access requests and attached users/roles</strong>: Go to <em>Manage Access > Accessors by Request</em></li>
 			<li><strong>Browse all request outputs</strong>: Go to <em>Manage Access > Request Outputs</em></li>
-			<li><strong>Browse access requests with requested datasets and manage approvals</strong>: Go to <em>Manage Access > Dataset Access Approvals</em></li>
+			<li><strong>Browse requested datasets by access request and manage approvals</strong>: Go to <em>Manage Access > Dataset Access Approvals</em></li>
 		</ul>
 	</li>
 	<br/>

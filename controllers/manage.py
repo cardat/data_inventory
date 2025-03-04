@@ -41,10 +41,10 @@ def browse():
             
             db.accessrequest.title, db.accessrequest.date_of_request, db.accessrequest.category_access, db.accessrequest.primary_purpose,
             db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.approval_date,
-            db.accessor.accessrequest_id, db.accessor.cardat_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
+            db.accessor.accessrequest_id, db.accessor.repo_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 
-            db.cardat_user.name, db.cardat_user.email, db.cardat_user.orcid,
+            db.repo_user.name, db.repo_user.email, db.repo_user.orcid,
 
             db.personnel.name, db.personnel.email, db.personnel.orcid, db.personnel.rorid
         ]
@@ -54,7 +54,7 @@ def browse():
         dataset = db.dataset.shortname,
         entity = db.entity.entityname,
         request_output = ~db.request_output.publication_date,
-        cardat_user = db.cardat_user.name
+        repo_user = db.repo_user.name
     )
     
     # custom fields for individual tables

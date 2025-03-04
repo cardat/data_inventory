@@ -37,7 +37,7 @@ response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
                      (('Dataset Linkages'), False, URL(c='manage', f='browse', args='dataset_linkage'))]
                  ],
                  [('Manage Access'), False, URL(c='manage', f='browse', args='accessrequest'),
-                    [(('Users'), False, URL(c='manage', f='browse', args='cardat_user')),
+                    [(('Users'), False, URL(c='manage', f='browse', args='repo_user')),
                     (('Access Requests'), False, URL(c='manage', f='browse', args='accessrequest')),
                     (('Accessors by Request'), False, URL(c='manage', f='browse', args='accessor')),
                     (('Request Outputs'), False, URL(c='manage', f='browse', args='request_output')),
