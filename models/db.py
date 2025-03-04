@@ -440,24 +440,6 @@ db.define_table(
     auth.signature,
     format = '%(repo_user_id)s'
 )
-
-
-
-
-
-
-
-Something else is here jofi jahiosfu aohweh aiweuhiale
-
-
-
-
-
-
-
-
-
-
 db.accessor.role.widget = SQLFORM.widgets.autocomplete(
      request, db.accessor.role, 
      orderby=db.accessor.role, distinct=True, at_beginning=False,

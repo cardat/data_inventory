@@ -54,6 +54,14 @@ div.navbar {
 	text-align: right;
 }
 
+/** Style quick access forms **/
+.form_quick_select > table {
+	width:100%;
+}
+.form_quick_select > table .w2p_fl {
+	width:100px;
+}
+
 
 /** Style data dictionary table **/
 table#data_dictionary tr:nth-of-type(odd) {

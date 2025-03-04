@@ -1,20 +1,23 @@
 # Forms to jump to specific edit pages in smartgrid
 def jump():
-    autocomplete_args = dict(limitby=(0, 10), min_length=4, at_beginning = False)
+    autocomplete_args = dict(at_beginning = False, user_signature=True)
 
     # Go to dataset_detail view
     form_view_dset = SQLFORM.factory(
-        Field('view_dataset', requires=IS_IN_DB(db, 'dataset.id', '%(shortname)s')), 
-        # widget = SQLFORM.widgets.autocomplete(request, db.dataset.shortname, **autocomplete_args)),
-        table_name = "view_dataset"
+        Field('view_dataset', requires=IS_IN_DB(db, 'dataset.id'), 
+            widget = SQLFORM.widgets.autocomplete(request, db.dataset.shortname, id_field=db.dataset.id,
+                **autocomplete_args)),
+        table_name = "view_dataset", _class = "form_quick_select"
     )
     if form_view_dset.process().accepted:
         redirect(URL(c='manage', f='dataset_detail', args=[form_view_dset.vars.view_dataset]))
 
     # Jump to edit project
     form_edit_project = SQLFORM.factory(
-        Field('edit_project', requires=IS_IN_DB(db, 'project.id', '%(title)s')), 
-        table_name = "edit_project"
+        Field('edit_project', requires=IS_IN_DB(db, 'project.id'), 
+            widget = SQLFORM.widgets.autocomplete(request, db.project.title, id_field=db.project.id,
+                **autocomplete_args)),
+        table_name = "edit_project", _class = "form_quick_select"
     )
     if form_edit_project.process().accepted:
         redirect(URL(c='manage', f='browse', args=('project', 'edit', 'project', form_edit_project.vars.edit_project), 
@@ -22,8 +25,11 @@ def jump():
 
     # Jump to edit dataset
     form_edit_dset = SQLFORM.factory(
-        Field('edit_dataset', requires=IS_IN_DB(db, 'dataset.id', '%(shortname)s')), 
-        table_name = "edit_dataset"
+        Field('edit_dataset', requires=IS_IN_DB(db, 'dataset.id'), 
+            widget = SQLFORM.widgets.autocomplete(request, db.dataset.shortname, id_field=db.dataset.id,
+                keyword="_autocomplete_dataset_id_edit", # differentiate from view select form
+                **autocomplete_args)), 
+        table_name = "edit_dataset", _class = "form_quick_select"
     )
     if form_edit_dset.process().accepted:
         redirect(URL(c='manage', f='browse', args=['dataset', 'edit', 'dataset', form_edit_dset.vars.edit_dataset], 
@@ -31,8 +37,10 @@ def jump():
 
     # Jump to edit personnel details
     form_edit_personnel = SQLFORM.factory(
-        Field('edit_personnel', requires=IS_IN_DB(db, 'personnel.id', '%(name)s')), 
-        table_name = "edit_personnel"
+        Field('edit_personnel', requires=IS_IN_DB(db, 'personnel.id'), 
+            widget = SQLFORM.widgets.autocomplete(request, db.personnel.name, id_field=db.personnel.id,
+                **autocomplete_args)),
+        table_name = "edit_personnel", _class = "form_quick_select"
     )
     if form_edit_personnel.process().accepted:
         redirect(URL(c='manage', f='browse', args=['personnel', 'edit', 'personnel', form_edit_personnel.vars.edit_personnel], 
@@ -40,11 +48,13 @@ def jump():
 
     # Jump to edit user details
     form_edit_user = SQLFORM.factory(
-        Field('edit_user', requires=IS_IN_DB(db, 'cardat_user.id', '%(name)s')), 
-        table_name = "edit_user"
+        Field('edit_user', requires=IS_IN_DB(db, 'repo_user.id', '%(name)s'),
+            widget = SQLFORM.widgets.autocomplete(request, db.repo_user.name, id_field=db.repo_user.id,
+                **autocomplete_args)), 
+        table_name = "edit_user", _class = "form_quick_select"
     )
     if form_edit_user.process().accepted:
-        redirect(URL(c='manage', f='browse', args=['cardat_user', 'edit', 'cardat_user', form_edit_user.vars.edit_user], 
+        redirect(URL(c='manage', f='browse', args=['repo_user', 'edit', 'repo_user', form_edit_user.vars.edit_user], 
         user_signature=True))
 
     return dict(form_view_dset = form_view_dset,
@@ -85,14 +95,14 @@ def duplicate_dataset():
 def add_user_as_personnel():
     # Choose user to copy
     form = SQLFORM.factory(
-        Field('select_user', 'cardat_user.id', requires=IS_IN_DB(db, 'cardat_user.id', '%(name)s')),
+        Field('select_user', 'repo_user.id', requires=IS_IN_DB(db, 'repo_user.id', '%(name)s')),
         Field('confirm_insert', requires=[IS_IN_SET((True,)), IS_NOT_EMPTY()], widget = SQLFORM.widgets.checkboxes.widget),
         table_name = "select_user",
         submit_button='Add as personnel record'
     )
     
     if form.validate():
-        selected = db.personnel._filter_fields(db.cardat_user(form.vars.select_user))
+        selected = db.personnel._filter_fields(db.repo_user(form.vars.select_user))
         
         if db((db.personnel.orcid == selected['orcid']) | (db.personnel.name == selected['name'])).count():
             response.flash = "User name or ORCID already exists in personnel table"
