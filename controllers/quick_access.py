@@ -68,6 +68,7 @@ def duplicate_dataset():
     if form.validate():
         selected = db.dataset._filter_fields(db.dataset(form.vars.select_dataset))
         selected['shortname'] = selected['shortname'] + "_COPY"
+        selected['title'] = selected['title'] + "_COPY"
         # remove publication process info, and links
         vars_nocopy = ('request_date', 'provision_status', 'provision_date', 'pubdate', 'pub_notes', 'url_link', 'repository_link')
         for i in vars_nocopy:
