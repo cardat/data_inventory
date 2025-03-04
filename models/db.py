@@ -440,8 +440,28 @@ db.define_table(
     auth.signature,
     format = '%(repo_user_id)s'
 )
+
+
+
+
+
+
+
+Something else is here jofi jahiosfu aohweh aiweuhiale
+
+
+
+
+
+
+
+
+
+
 db.accessor.role.widget = SQLFORM.widgets.autocomplete(
-     request, db.accessor.role, limitby=(0, 10), min_length=2, distinct = True)
+     request, db.accessor.role, 
+     orderby=db.accessor.role, distinct=True, at_beginning=False,
+     user_signature=True)
 
 # KEYWORDS ####
 # tags for datasets
@@ -453,7 +473,9 @@ db.define_table(
     format = '%(thesaurus)s: %(keyword)s'
     )
 db.keyword.thesaurus.widget = SQLFORM.widgets.autocomplete(
-    request, db.keyword.thesaurus, limitby=(0, 10), min_length=2, distinct = True)
+    request, db.keyword.thesaurus,
+    orderby=db.accessor.role, distinct=True, at_beginning=False,
+    user_signature=True)
 # unique keywords for each thesaurus
 db.keyword.keyword.requires = [
     IS_NOT_IN_DB(db(db.keyword.thesaurus == request.vars.thesaurus), 'keyword.keyword'), 
