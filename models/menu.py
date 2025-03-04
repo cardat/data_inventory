@@ -47,7 +47,12 @@ response.menu = [['CARDAT Inventory Home', False, URL('default','index')],
                  # ['Statistics', False, URL(c = 'audit', f = 'stats'),
                  #    [('Audit', False, URL(c = 'audit', f = 'audit'))]
                  # ],
-                 ['Documentation', False, URL(c='index', f='guide')],
+                 ['Documentation', False, URL(c='index', f='guide'),
+                    [(('Overview', False, URL(c='index', f='guide'))),
+                     (('Data Dictionary', False, URL(c='index', f='data_dictionary'))),
+                     (('Edit Data Dictionary', False, URL(c='index', f='edit_data_dictionary')))
+                    ]
+                 ],
                  ]
 
 DEVELOPMENT_MENU = True

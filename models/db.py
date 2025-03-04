@@ -484,3 +484,28 @@ db.define_table(
 db.dataset_linkage.linkage.requires = IS_IN_SET(("Subset/Extraction", "Derivation"))
 db.dataset_linkage.child_dataset.requires = IS_IN_DB(db(db.dataset.id != request.post_vars.parent_dataset),
                             'dataset.id', db.dataset._format)
+
+
+
+
+
+
+
+
+
+
+
+# Full field descriptions ####
+# i.e. metadata about metadata
+
+db.define_table(
+    'tbl_description',
+    Field('tbl_nm', 'string', required = True, notnull=True, label = "Table Name"),
+    Field('col_nm', 'string', required = True, notnull=True, label = "Field Name"),
+    Field('ordinal_position', 'integer', required = True),
+    Field('data_type', 'string', required = True),
+    Field('category', 'string'),
+    Field('description', 'text'),
+    auth.signature,
+    format = '%(table_name)s : %(column_name)s'
+    )

@@ -53,3 +53,14 @@ div.navbar {
 .web2py_grid .web2py_form table tr td.w2p_fl label {
 	text-align: right;
 }
+
+
+/** Style data dictionary table **/
+table#data_dictionary tr:nth-of-type(odd) {
+  background-color: #BECFDD64;
+}
+
+table#data_dictionary td {
+  padding-top:5px;
+  padding-bottom:5px;
+}

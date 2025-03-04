@@ -1,0 +1,36 @@
+{{extend 'layout.html'}}
+
+{{=form}}
+<hr>
+<h4>{{=table_name}}</h4>
+<table id="data_dictionary" style="width:100%">
+	<colgroup>
+		<col span="1" />
+		<col span="1" />
+		<col span="1" />
+		<col span="1" width = "60%" />
+	</colgroup>
+	
+	<tbody>
+		<tr>
+			<th>Field</th>
+			<th>Data Type</th>
+			<th>Category</th>
+			<th>Description</th>
+		</tr>
+		{{for row in rows:}}
+		<tr>
+			<td>{{=row.col_nm}}</td>
+			<td>{{=row.data_type}}</td>
+			<td>{{if row.description is not None:}}
+				{{=row.category}}
+				{{else:}}
+				{{pass}}</td>
+			<td>{{if row.description is not None:}}
+				{{=XML(row.description.replace('\n', '<br/>'))}}
+				{{else:}}
+				{{pass}}</td>
+		</tr>
+		{{pass}}
+	</tbody>
+</table>
