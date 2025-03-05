@@ -40,7 +40,7 @@ def browse():
             db.attr.variable_name, db.attr.units,
             
             db.accessrequest.title, db.accessrequest.date_of_request, db.accessrequest.category_access, db.accessrequest.primary_purpose,
-            db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.approval_date,
+            db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.approved, db.request_dataset.approval_date,
             db.accessor.accessrequest_id, db.accessor.repo_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 

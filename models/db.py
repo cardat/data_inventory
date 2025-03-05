@@ -221,7 +221,6 @@ db.define_table(
     Field('title','string', unique = True, notnull=True, comment = 'Descriptive, human-readable name'),
     Field('contact','string', comment = 'A contact name for general enquiries', default = "CARDAT Data Team"),
     Field('contact_email','string', comment = 'An email address for general enquiries.'),
-    Field('associated_party','text', comment = 'A person, organisational role or organisation who has had an important role in the creation or maintenance of the data (i.e. parties who grant access to survey sites as landholder or land manager, or may have provided funding for the surveys)'),
     Field('repository_path' ,'string', comment='Dataset location in CARDAT repository - typically folder path from Environment_General or ResearchProjects_CAR. May be alternative storage location for restricted data.'),
     Field('repository_link' ,'string', comment='Link to dataset folder in data repository or code repository.'),
     Field('url_link' ,'string', comment = 'URL link or DOI to source if public. An additional, secondary identifier for this entity, possibly from different data management systems. DOI or other persistent URL preferred.'),
@@ -396,11 +395,13 @@ db.define_table(
     'request_dataset',
     Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
     Field('dataset_id', db.dataset, required = True, notnull=True),
-    Field('approval_date', 'date', required = True, comment = "Date request approved"),
+    Field('approved', 'string', required = True, default = 'Pending'),
+    Field('approval_date', 'date', required = True, comment = "Date request approved or denied"),
     Field('approval_documentation', 'string', comment = 'Location of record of approval'),
     auth.signature,
     format = '%(accessrequest_id)s - %(dataset_id)s'
     )
+db.request_dataset.approved.requires = IS_IN_SET(['Approved', 'Pending', 'Denied'])
 
 ## Secondary to access request
 # record of outputs from access requests
@@ -410,7 +411,7 @@ db.define_table(
     Field('title', 'string', required = True),
     Field('author', 'string'),
     Field('output_category', 'string', comment = "Type of output - conference/journal paper, dataset, report, thesis, etc."),
-    Field('publication', 'string', comment = 'Specific output type, e.g. book, newspaper, etc.'),
+    Field('output_subcategory', 'string', comment = 'Optional - Further specification of output type, e.g. newspaper article, visualisation/poster, etc.'),
     Field('publication_date', 'date'),
     Field('link', 'string', comment = "URL link to output if exists - DOI or similar permanent link where possible.'"),
     Field('status', 'string', default = "Pending"),
@@ -418,7 +419,7 @@ db.define_table(
     auth.signature,
     format = '%(title)s'
     )
-db.request_output.requires = IS_IN_SET(["Journal Article", "Dataset", "Report", "Media Article", "Thesis", "Other"])
+db.request_output.output_category.requires = IS_IN_SET(["Journal Article", "Dataset", "Report", "Media", "Thesis", "Other"])
 db.request_output.status.requires = IS_IN_SET(['Unknown (lapsed)', 'No output', 'Pending', 'Published'])
 db.request_output.status.link = IS_EMPTY_OR(IS_URL())
 
@@ -456,7 +457,7 @@ db.define_table(
     )
 db.keyword.thesaurus.widget = SQLFORM.widgets.autocomplete(
     request, db.keyword.thesaurus,
-    orderby=db.accessor.role, distinct=True, at_beginning=False,
+    orderby=db.keyword.thesaurus, distinct=True, at_beginning=False,
     user_signature=True)
 # unique keywords for each thesaurus
 db.keyword.keyword.requires = [
@@ -470,8 +471,8 @@ db.define_table(
     auth.signature,
     format = '%(dataset_id)s: %(keyword_id)s'
 )
-db.j_dataset_keyword._singular = "Dataset-keyword"
-db.j_dataset_keyword._plural = "Dataset-keyword"
+db.j_dataset_keyword._singular = "Dataset_keyword"
+db.j_dataset_keyword._plural = "Dataset_keyword"
 
 
 
@@ -481,11 +482,11 @@ db.define_table(
     'dataset_linkage',
     Field('parent_dataset', db.dataset, required = True, notnull=True),
     Field('child_dataset', db.dataset, required = True, notnull=True),
-    Field('linkage', 'string', comment = 'Parent-child relationship of dataset', notnull=True),
+    Field('linkage', 'string', comment = 'Relationship of child dataset to parent', notnull=True),
     auth.signature,
     format = '%(linkage)s: %(parent_dataset)s -> %(child_dataset)s'
     )
-db.dataset_linkage.linkage.requires = IS_IN_SET(("Subset/Extraction", "Derivation"))
+db.dataset_linkage.linkage.requires = IS_IN_SET(("Subset/Extraction", "Derivation", "Successor"))
 db.dataset_linkage.child_dataset.requires = IS_IN_DB(db(db.dataset.id != request.post_vars.parent_dataset),
                             'dataset.id', db.dataset._format)
 
