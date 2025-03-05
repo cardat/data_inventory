@@ -16,21 +16,22 @@
 
 <h4 id='h-personnel'>Personnel</h4>
 {{if len(rows_personnel) != 0: }}
-	{{=rows_personnel}}
+	{{=SQLTABLE(rows_personnel, headers='fieldname:capitalize', _class='dset_detail_tbl') }}
 {{else: }}
 <p><strong>No personnel attached.</strong></p>
 {{pass}}
 
 <h4 id='h-licencing'>Licencing</h4>
 {{if len(rows_licence) != 0: }}
-	{{=rows_licence}}
+	{{=SQLTABLE(rows_licence, headers='fieldname:capitalize', _class='dset_detail_tbl') }}
 {{else: }}
 <p><strong>No licence attached.</strong></p>
 {{pass}}
 
 <h4 id='h-accessrequests'>Access requests</h4>
 {{if len(rows_accessrequests) != 0: }}
-	{{=rows_accessrequests}}
+	<p>Most recent {{=len(rows_accessrequests)}} shown</p>
+	{{=SQLTABLE(rows_accessrequests, headers='fieldname:capitalize', _class='dset_detail_tbl') }}
 {{else: }}
 <p><strong>No access requests attached.</strong></p>
 {{pass}}

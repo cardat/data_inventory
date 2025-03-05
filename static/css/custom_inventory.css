@@ -33,6 +33,7 @@ div.navbar {
 .web2py_grid .web2py_form table {
 	table-layout:fixed;
 	width: 100%;
+	overflow-wrap: break-word;
 	
 	tr td.w2p_fw {
 		width: 70%;
@@ -62,6 +63,13 @@ div.navbar {
 	width:100px;
 }
 
+/** Style dataset details table **/
+table.dset_detail_tbl {
+	border: 2px dotted #BECFDD;
+}
+table.dset_detail_tbl tbody tr:nth-of-type(odd) {
+  background-color: #BECFDD64;
+}
 
 /** Style data dictionary table **/
 table#data_dictionary tr:nth-of-type(odd) {

@@ -89,17 +89,15 @@ def dataset_detail():
     form = SQLFORM(db.dataset, record=dset_id, readonly=True, comments = False)
     # form_licence = SQLFORM(db.intellectualright, record=dset_id, readonly=True, comments = False)
 
-    rows_licence = SQLTABLE(db(db.intellectualright.dataset_id == dset_id).select(
-        db.intellectualright.id, db.intellectualright.licence_code),
-    headers='fieldname:capitalize')
+    rows_licence = db(db.intellectualright.dataset_id == dset_id).select(
+        db.intellectualright.id, db.intellectualright.licence_code)
 
-    rows_personnel = SQLTABLE(db(db.j_dataset_personnel.dataset_id == dset_id).select(
-        db.j_dataset_personnel.id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role),
-    headers='fieldname:capitalize')
+    rows_personnel = db(db.j_dataset_personnel.dataset_id == dset_id).select(
+        db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role)
     
-    rows_accessrequests = SQLTABLE(db(db.request_dataset.dataset_id == dset_id).select(
-        db.request_dataset.id, db.request_dataset.accessrequest_id),
-    headers='fieldname:capitalize')
+    rows_accessrequests = db(db.request_dataset.dataset_id == dset_id).select(
+        db.request_dataset.accessrequest_id, db.request_dataset.approval_date, 
+        orderby = ~db.request_dataset.approval_date, limitby = (0, 10))
 
     # row = db.dataset(db.dataset.id == dset_id).select()
     # print(row)
@@ -109,8 +107,6 @@ def dataset_detail():
     ('Licencing', False, '#h-licencing'),
     ('Access requests', False, '#h-accessrequests')]
     )
-    # prettify
-    # response.title="Details of dataset '{}'".format(shortname)
     
     return dict(
         form=form,
