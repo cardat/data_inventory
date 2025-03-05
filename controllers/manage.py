@@ -30,7 +30,7 @@ def browse():
             db.dataset.shortname, db.dataset.url_link,
             db.j_dataset_personnel.dataset_id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role,
             db.entity.entityname, db.entity.physical_distribution,
-            db.intellectualright.licence_code,
+            db.intellectualright.licence_code, db.intellectualright.accessibility,
             db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.link,
             
             db.keyword.thesaurus, db.keyword.keyword,
@@ -90,7 +90,7 @@ def dataset_detail():
     # form_licence = SQLFORM(db.intellectualright, record=dset_id, readonly=True, comments = False)
 
     rows_licence = db(db.intellectualright.dataset_id == dset_id).select(
-        db.intellectualright.id, db.intellectualright.licence_code)
+        db.intellectualright.licence_code, db.intellectualright.accessibility)
 
     rows_personnel = db(db.j_dataset_personnel.dataset_id == dset_id).select(
         db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role)
