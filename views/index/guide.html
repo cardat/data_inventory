@@ -1,41 +1,72 @@
 {{extend 'layout.html'}}
 
   {{if auth.is_logged_in():}}
-  <h4>{{=T("Structure")}}</h4>,
-  {{=IMG(_src=URL("static/images", "CARDAT_tbl_relation.png"), _alt = "CARDAT table relationships")}}
-
-  <h4>{{=T("Guide to Usage")}}</h4>
-  <p>The data inventory is primarily divided into two sections - one for managing data assets and one for managing access and usage of data. It is suitable for managing a directory of data sources as well as for the inventory/management of a data repository.</p>
-  <p>The central structure of the inventory of data assets is inspired by the 
-  {{=A('Ecological Metadata Language', _href='https://eml.ecoinformatics.org/')}} and uses a project-dataset-entity tree structure. Datasets (<em>dataset</em>) are the key focus - each dataset record has an abstract and description of methods and study extent, and importantly has a record of licencing attached (<em>intellectualright</em>) and personnel (<em>personnel</em>) involved, particularly the data owner or creator (<em>j_dataset_personnel</em>). Methodology which has been published (e.g. described in a journal paper) can also be attached to a dataset (<em>dataset_publication</em>). Datasets can contain one or more entities (<em>entity</em>) which are typically files or code repositories. In turn, one or more datasets can be grouped into an overarching project (<em>project</em>), typically defined by the intended outcome and funding source.</p>
-  <p>Additional helper information for dataset can be added with keyword tags (<em>j_dataset_keyword</em>) and linkages between datasets (<em>dataset_linkage</em>), describing parent-child relationships between datasets as, for example, a subset or derivation.</p>
   
-
-  <p>Entities can be further described with attributes (<em>attr</em>), which detail the variables available within an entity.</p>
-  <p>Access requests for datasets are separatedly recorded. A request is defined by a specific purpose of dataset usage and expected outcome, such as a PM2.5 and mortality study, which requests access to a PM2.5 CTM surfaces dataset and a mortality dataset. Attached to the access request (<em>accessrequest</em>) are the people involved in the study and their roles (<em>accessor</em>), the expected outputs (<em>request_output</em>), and the datasets requested and approval status (<em>request_dataset</em>). A unique record of individuals is held in a user table (<em>repo_user</em>).</p>
+  <h4>{{=T("Quick Usage Guide")}}</h4>
+  <p>The inventory's main data asset items are datasets, which are grouped into overarching projects. Each dataset may hold one or more entities (often called resources in other metadata frameworks). Details of access requests for specific dataset(s) may also be recorded.</p>
   
-  <h4>{{=T("Step-by-step guide")}}</h4>
   <h5>{{=T("Adding a new dataset")}}</h5>
   <ol>
-	<li>Add personnel (these may be individuals or organisations who were involved in the creation of a project or dataset) to the personnel table (<em>Manage Data > Data Personnel</em>)
-	<ul>
-		<li>A name is required, but it is preferred to also add an ORCID (for individuals) or ROR (for organisations) for unique identification</li>
-		<li>An alternative name can be provided (for example, an organisation may have a common abbreviation, or a person a shortened, anglicised or nickname)</li>
-		<li>Also add email(s) and affiliation(s) if known</li>
-		<li>A website may be added (more relevant for organisations - typically a home page)</li>
-	</ul>
-	<li>If the overarching project does not yet exist, add a new project.</li>
-	<ul>
-		<li>Describe the general project context and aim in the Abstract</li>
-		<li>Describe the overall study extent</li>
-		<li>Add funding information if known and year of project establishment</li>
-	</ul>
-	<li>Add a new dataset under the appropriate project, giving a brief description of abstract, study extent and recording the contact details. Also identify the publication status.</li>
-    <li></li>
-  </ol>  
+	<li>Add personnel (if not already existing) (<em>Manage Data > Data Personnel</em>)</li>
+		<ul><li>These may be individuals or organisations who were involved in the creation of a project or dataset or are a key contact - they must exist before being linked to a dataset/project.</li></ul>
+	<li>If the overarching project does not yet exist, add a new project (<em>Manage Data > Projects</em>)</li>
+		<ul><li>Details of overview, extent and funding</li></ul>
+	<li>Add a new dataset under the appropriate project (<em>Manage Data > Datasets</em>)</li>
+		<ul><li>Details of overview, extent, main contact and repository publication status</li></ul>
+	<li>Attach personnel to the dataset/project as needed (navigate via Projects, Datasets or Data Personnel).</li>
+    <li>Add further dataset information if appropriate</li>
+		<ul>
+			<li>IMPORTANT: Add licensing information (defining conditions of use/reuse and sharing)</li>
+			<li>Dataset publication describing methodology</li>
+			<li>Entities (key files)</li>
+			<li>Keyword tags</li>
+		</ul>
+  </ol>
+  
+  <h5>{{=T("Adding a new dataset access request")}}</h5>
+  <ol>
+	<li>Add the request (<em>Manage Access > Access Requests</em>)</li>
+		<ul><li>Brief description/abstract of purpose of request</li></ul>
+	<li>Link repository user(s) to the request as an accessor (<em>Manage Access > Accessors</em>)</li>
+		<ul><li>If accessor does not yet exist as User, add (<em>Manage Access > Users</em>)</li></ul>
+	<li>Add expected output, or detail/link of output if known (<em>Manage Access > Request Outputs</em>)</li>
+	<li>Link to requested dataset(s) (<em>Manage Access > Dataset Access Approvals</em>)</li>
+		<ul><li>Record approval status and date here</li><ul>
+  </ol>
+  
+  <hr>
+  
+  <h4>{{=T("Database Table Relationship Structure")}}</h4>,
+  {{=IMG(_src=URL("static/images", "CARDAT_tbl_relation.png"), _alt = "CARDAT table relationships")}}
+
+  <p>The data inventory is primarily divided into two sections - one for managing data assets and one for managing access and usage of data. It is suitable for managing a directory of data sources as well as for the inventory/management of a data repository.</p>
+  <h5>Data assets</h5>
+  <p>The central structure of the inventory of data assets is inspired by the 
+  {{=A('Ecological Metadata Language', _href='https://eml.ecoinformatics.org/')}} and uses a project-dataset-entity tree structure. Datasets (<em>dataset</em>) are the key focus - each dataset record has an abstract and description of methods and study extent. Attached to each dataset are:</p>
+  <ul>
+	<li>a record of licencing attached (<em>intellectualright</em>) <strong>IMPORTANT!</strong></li>
+	<li>personnel involved and their role involved, particularly the data owner or creator (<em>j_dataset_personnel</em>)</li>
+		<ul><li>Note all personnel have a single record in <em>personnel</em> where their affiliation and contact details can be recorded</li></ul>
+	<li>documented methodology (if applicable) which has been published (e.g. described in a journal paper) (<em>dataset_publication</em>)</li>
+	<li>one or more entities (<em>entity</em>) which are typically files or code repositories</li>
+		<ul><li>Entities can be further described with attributes (<em>attr</em>), which detail the variables available within an entity.</li></ul>
+  </ul>
+  <p>Additional helper information for datasets can be added with keyword tags (<em>j_dataset_keyword</em>) and linkages between datasets (<em>dataset_linkage</em>), describing parent-child relationships between datasets as, for example, a subset or derivation.</p>  
+  <p>In turn, one or more datasets can be grouped into an overarching project (<em>project</em>), typically defined by the intended outcome and funding source. These may also have personnel attached (e.g. Owner or other personnel) (<em>j_project_personnel</em>).</p>
+  <p>Access requests for datasets are separatedly recorded. A request is defined by a specific purpose of dataset usage and expected outcome, such as a PM2.5 and mortality study, which requests access to a PM2.5 CTM surfaces dataset and a mortality dataset. Attached to the access request (<em>accessrequest</em>) are:
+  <ul>
+	<li>the people involved in the study and their roles (<em>accessor</em>)</li>
+	  <ul><li>A unique record of individual repository users and their details is held in a user table (<em>repo_user</em>)</li></ul>
+	<li>the expected outputs (<em>request_output</em>)</li>
+	<li>the datasets requested and approval status (<em>request_dataset</em>)</li>
+  </ul>
+  <br/>
+  <br/>
+  <p>Please see the {{=A("data dictionary", _href=URL(c="index", f="data_dictionary"))}} for detailed explanation of fields for each table. (<em>Note this data dictionary exists as an entirely separate table in the database.</em>)</p>
   
   {{elif 'content' in globals():}}
 	{{=content}}
+	
   {{else:}}
   <li>{{=T('To use the data inventory please register in top right corner.')}}</li>
 	{{=BEAUTIFY(response._vars)}}
