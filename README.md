@@ -1,6 +1,6 @@
 CARDAT Data Inventory
 ================
-2025-02-17
+2025-03-06
 
 ## About
 
@@ -29,6 +29,13 @@ concurrent access by a team.
 3.  Double-click to run the web2py.exe file and go to
     `127.0.0.1:8000/cardat_data_inventory` in your browser
 4.  In the top right corner, sign up with a local username and password
+
+The default is to use a local SQLite database. To change this, edit the
+DAL specification in `models/db.py`, providing the remote database name,
+hostname, and authentication details as required. Note that if you are
+connecting to an existing database for the first time (e.g. shared
+database among multiple instances of the app), include the
+`fake_migrate_all = True` argument. This can be removed afterwards.
 
 ## General database structure
 
