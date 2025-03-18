@@ -8,32 +8,17 @@
 	{{=right_sidebar}}
 {{end}}
 
-<h4 id='h-dataset'>Dataset metadata</h4>
-{{if form:}}
-    {{=form}}
+{{=table_heading}}
+
+{{if table:}}
+	{{=table}}
 {{pass}}
 
-
-<h4 id='h-personnel'>Personnel</h4>
-{{if len(rows_personnel) != 0: }}
-	{{=SQLTABLE(rows_personnel, headers='fieldname:capitalize', _class='dset_detail_tbl') }}
-{{else: }}
-<p><strong>No personnel attached.</strong></p>
+{{for subtbl in subtbls: }}
+	{{=subtbl[0]}}
+	{{if len(subtbl[1]) != 0: }}
+	{{=SQLTABLE(subtbl[1], headers='fieldname:capitalize', _class='dset_detail_tbl') }}
+	{{else: }}
+	{{=subtbl[2]}}
+	{{pass}}
 {{pass}}
-
-<h4 id='h-licencing'>Licencing</h4>
-{{if len(rows_licence) != 0: }}
-	{{=SQLTABLE(rows_licence, headers='fieldname:capitalize', _class='dset_detail_tbl') }}
-{{else: }}
-<p><strong>No licence attached.</strong></p>
-{{pass}}
-
-<h4 id='h-accessrequests'>Access requests</h4>
-{{if len(rows_accessrequests) != 0: }}
-	<p>Most recent {{=len(rows_accessrequests)}} shown</p>
-	{{=SQLTABLE(rows_accessrequests, headers='fieldname:capitalize', _class='dset_detail_tbl') }}
-{{else: }}
-<p><strong>No access requests attached.</strong></p>
-{{pass}}
-
- 

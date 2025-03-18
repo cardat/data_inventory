@@ -4,7 +4,7 @@ def browse():
     if not table in db.tables(): redirect(URL('error'))
 
     # prettify
-    response.title="Browse {}".format(table)
+    response.title='Browse ({} descendants)'.format(table)
 
     # add anchor links in sidebar for create, view and edit forms (in hierarchy) 
     if request.args(-3) in ('view', 'edit') or request.args(-2) == 'new':
@@ -86,9 +86,28 @@ def dataset_detail():
     dset_id = request.args[0]
     if not dset_id in db.dataset.id: redirect(URL('error'))
 
-    form = SQLFORM(db.dataset, record=dset_id, readonly=True, comments = False)
-    # form_licence = SQLFORM(db.intellectualright, record=dset_id, readonly=True, comments = False)
+    # Main metadata for dataset
+    rows=db(db.dataset.id == dset_id).select()
+    if rows: # transpose this and manually build table (match subtable structure)
+        rows_tbl = []
+        count = 1
+        for field in db.dataset.fields:
+            val = rows[0][field]
+            if field in ('abstract', 'methods_protocol', 'methods_steps', 'sampling_desc', 'additional_info', 'pub_notes') and val is not None:
+                val = XML(val.replace('\n', '<br>'), sanitize=True, permitted_tags=['br/'])
+            rows_tbl.append(TR(TD(field), TD(val), _class = 'w2p_even' if count % 2 == 0 else 'w2p_odd'))
+            count += 1
+        table=TABLE(THEAD(TR(TH('Field'), TH('Value'))), 
+                *rows_tbl,
+                _class = 'dset_detail_tbl')
+    else:
+        table='No metadata record found.'
 
+    table_heading = H4('Dataset metadata (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'edit', 'dataset', dset_id], user_signature = True)), 
+            ')', _id='h-dataset')
+
+    # Further tables attached to this dataset record
     rows_licence = db(db.intellectualright.dataset_id == dset_id).select(
         db.intellectualright.licence_code, db.intellectualright.accessibility)
 
@@ -99,20 +118,45 @@ def dataset_detail():
         db.request_dataset.accessrequest_id, db.request_dataset.approval_date, 
         orderby = ~db.request_dataset.approval_date, limitby = (0, 10))
 
+    rows_entity = db(db.entity.dataset_id == dset_id).select(
+        db.entity.entityname)
+
     # row = db.dataset(db.dataset.id == dset_id).select()
     # print(row)
     
     sidebar =  MENU([('Dataset details', False, '#h-dataset'),
     ('Personnel', False, '#h-personnel'),
+    ('Entities', False, '#h-entities'),
     ('Licencing', False, '#h-licencing'),
     ('Access requests', False, '#h-accessrequests')]
     )
+
+    # list of lists (tables to be shown)
+    # each sublist has the following 3 elements - Heading, rows (to be shown), Message if zero rows
+    subtbls = [
+        [H4('Personnel (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'j_dataset_personnel.dataset_id', dset_id]), user_signature = True), 
+            ')', _id='h-personnel'), 
+         rows_personnel, P(XML('<strong>No personnel attached.</strong>'))
+         ],
+        [H4('Entities (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'entity.dataset_id', dset_id]), user_signature = True), 
+            ')', _id='h-entities'), 
+         rows_entity, P(XML('<strong>No entities attached.</strong>'))],
+         [H4('Licencing (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'intellectualright.dataset_id', dset_id]), user_signature = True), 
+            ')', _id='h-licencing'), 
+         rows_licence, P(XML('<strong>No licence attached.</strong>'))],
+         [H4('Access requests (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'accessrequest.dataset_id', dset_id]), user_signature = True), 
+            ')', _id='h-accessrequests'), 
+         rows_accessrequests, P(XML('<strong>No access requests attached.</strong>'))]
+    ]
     
     return dict(
-        form=form,
-        rows_licence = rows_licence,
-        rows_personnel = rows_personnel,
-        rows_accessrequests = rows_accessrequests,
+        table_heading=table_heading,
+        table=table,
+        subtbls = subtbls,
         left_sidebar_enabled='sidebar' in locals(),
         left_sidebar=sidebar if 'sidebar' in locals() else None
     )
