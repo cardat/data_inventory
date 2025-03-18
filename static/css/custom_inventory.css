@@ -30,7 +30,7 @@ div.navbar {
 .left-sidebar li {
 	list-style-type: disclosure-closed;
 }
-.left-sidebar li,hr,p,a {
+div.left-sidebar :is(li,hr,p,a) {
 	color: #105ba2;
 	border-color: #105ba2;
 }
