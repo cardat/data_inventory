@@ -227,6 +227,7 @@ db.define_table(
     Field('recommended_citation', 'text', comment='For example: 1. Creator (Publication Year): Title. Publisher. Identifier. 2. Creator (Publication Year): Title. Publisher. Date retrieved from website (URL). 3. Creator (Publication Year): Title. Publisher. Date received from data provider (name, role or organisation).'),
 
     ## description of data contained
+    Field('dataset_type', 'string', comment = 'One of data asset, code tool, project workspace'),
     Field('abstract','text', comment = 'A brief overview of the resource that is being documented. The abstract should include basic information that summarizes the study data'),
     Field('studyextent' ,'text', comment= 'Both a specific sampling area and frequency (temporal boundaries, frequency of occurrence, spatial extent and spatial resolution).'),
     # spatial
@@ -270,6 +271,8 @@ db.dataset.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'dataset.title')]
 db.dataset.contact_email.requires = [IS_EMAIL()]
 db.dataset.repository_link.requires = IS_EMPTY_OR(IS_URL())
 db.dataset.url_link.requires = IS_EMPTY_OR(IS_URL())
+db.dataset.dataset_type.requires = IS_IN_SET(['Data asset', 'Code tool', 'Project workspace'])
+db.dataset.dataset_type.default = 'Data asset'
 db.dataset.provision_status.requires = IS_IN_SET(['','Identified', 'Requested', 'Provided', 'QC', 'Published', 'Archived', 'Working'])      
 
 # show link as link
