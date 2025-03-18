@@ -11,7 +11,8 @@
 /** make top navbar sticky **/
 div.navbar {
 	position: sticky;
-	top:0vh;
+	top:0;
+	height: 50px;
 	z-index:100;
 }
 
@@ -19,14 +20,24 @@ div.navbar {
 .left-sidebar {
 	position: sticky;
 	top: 10vh;
+	margin-left: 5px;
+	padding: 5px;
 	background-color: #efefef;
 	font-size: small;
 	white-space: normal;
-	padding-top: 5px;
 	outline: thin solid #778899;
 }
 .left-sidebar li {
-	list-style-type: none;
+	list-style-type: disclosure-closed;
+}
+.left-sidebar li,hr,p,a {
+	color: #105ba2;
+	border-color: #105ba2;
+}
+
+/* make the anchor links accommodate the navbar height */
+tr {
+	scroll-margin-top: 60px;
 }
 
 /** Style grid table **/

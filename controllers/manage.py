@@ -17,8 +17,18 @@ def browse():
         # remove audit fields from display
         [fields.remove(f) for f in ('id', 'is_active', 'created_on', 'created_by', 'modified_on', 'modified_by') if f in fields]
 
-        field_html_ids = [(f, "_".join([table_name, f, "_row"])) for f in fields]
-        sidebar =  MENU([(fieldname, False, "#"+link) for fieldname, link in field_html_ids])
+        field_html_ids = [(f, '_'.join([table_name, f, '_row'])) for f in fields]
+        
+        # Construct sidebar
+        # add a data dictionary link if table exists in data dictionary
+        if db(db.tbl_description.tbl_nm == table_name).count() != 0:
+            sidebar = P(A(XML('<strong>Open data dictionary -></strong>'), 
+                        _href = URL(c='index', f="data_dictionary", args = table_name, user_signature = True),
+                        _target = "_blank")) + HR(_style = "margin:5px;")
+        else:
+            sidebar = P()
+        sidebar += SPAN(XML("Jump to field:")) + MENU([(fieldname, False, '#'+link) for fieldname, link in field_html_ids])
+
 
 
     ## options for smartgrid 
