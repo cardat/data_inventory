@@ -80,7 +80,7 @@ def duplicate_dataset():
         selected['shortname'] = selected['shortname'] + "_COPY"
         selected['title'] = selected['title'] + "_COPY"
         # remove publication process info, and links
-        vars_nocopy = ('request_date', 'provision_status', 'provision_date', 'pubdate', 'pub_notes', 'url_link', 'repository_link')
+        vars_nocopy = ('request_date', 'provision_status', 'provision_date', 'pubdate', 'pub_notes', 'public_link', 'repository_link')
         for i in vars_nocopy:
             selected.pop(i, None)
         new_id = db.dataset.insert(**selected)

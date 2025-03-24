@@ -1,7 +1,11 @@
 # General table browse with CRUD
 def browse():
     table = request.args(0)
-    if not table in db.tables(): redirect(URL('error'))
+    allowed_tables = ('project', 'dataset', 'entity', 'attr',
+                      'personnel', 'j_project_personnel', 'j_dataset_personnel',
+                      'intellectualright', 'dataset_publication', 'keyword', 'j_dataset_keyword', 'dataset_linkage',
+                      'repo_user', 'accessrequest', 'request_dataset', 'accessor', 'request_output')
+    if not table in allowed_tables: redirect(URL('error'))
 
     # prettify
     response.title='Browse ({} descendants)'.format(table)
@@ -37,9 +41,9 @@ def browse():
             db.project.title, 
             db.j_project_personnel.project_id, db.j_project_personnel.personnel_id, db.j_project_personnel.role,
 
-            db.dataset.shortname, db.dataset.url_link,
+            db.dataset.shortname, db.dataset.public_link,
             db.j_dataset_personnel.dataset_id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role,
-            db.entity.entityname, db.entity.physical_distribution,
+            db.entity.entityname, db.entity.entityformat, db.entity.physical_distribution,
             db.intellectualright.licence_code, db.intellectualright.accessibility,
             db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.link,
             
@@ -50,7 +54,7 @@ def browse():
             db.attr.variable_name, db.attr.units,
             
             db.accessrequest.title, db.accessrequest.date_of_request, db.accessrequest.category_access, db.accessrequest.primary_purpose,
-            db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.approved, db.request_dataset.approval_date,
+            db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.status, db.request_dataset.approval_date,
             db.accessor.accessrequest_id, db.accessor.repo_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 

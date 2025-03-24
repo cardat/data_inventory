@@ -224,7 +224,8 @@ db.define_table(
     Field('contact_email','string', comment = 'An email address for general enquiries.'),
     Field('repository_path' ,'string', comment='Dataset location in CARDAT repository - typically folder path from Environment_General or ResearchProjects_CAR. May be alternative storage location for restricted data.'),
     Field('repository_link' ,'string', comment='Link to dataset folder in data repository or code repository.'),
-    Field('url_link' ,'string', comment = 'URL link or DOI to source if public. An additional, secondary identifier for this entity, possibly from different data management systems. DOI or other persistent URL preferred.'),
+    Field('public_link' ,'string', comment = 'URL link or DOI to source if public. An additional, secondary identifier for this entity, possibly from different data management systems. DOI or other persistent URL preferred.'),
+    Field('publisher','string', comment = 'The publisher of this data set (e.g. repository, publishing house, any institution making the data available)'),
     Field('recommended_citation', 'text', comment='For example: 1. Creator (Publication Year): Title. Publisher. Identifier. 2. Creator (Publication Year): Title. Publisher. Date retrieved from website (URL). 3. Creator (Publication Year): Title. Publisher. Date received from data provider (name, role or organisation).'),
 
     ## description of data contained
@@ -249,12 +250,6 @@ db.define_table(
     Field('method_steps','text', comment='Each method step to implement the measurement protocols and set up the study. Note that the method is used to describe procedures that were actually performed. The method may have diverged from the protocol purposefully, or perhaps incidentally, but the procedural lineage is still preserved and understandable'),
     # other
     Field('additional_info','text', comment = 'Additional information'),
-    Field('publisher','string', comment = 'The publisher of this data set (e.g. repository, publishing house, any institution making the data available)'),
-
-    # sharing
-    # Field('access_rules','text', comment = "TO REMOVE"),
-    # Field('distribution_methods','text', comment = "TO REMOVE"),
-    # Field('metadataprovider','string', comment = 'TO REMOVE'),
 
     # publication process (in self repository)
     Field('request_date','date', comment = 'Date of request to data provider'),
@@ -271,14 +266,14 @@ db.dataset.title.requires = [IS_NOT_EMPTY(), IS_NOT_IN_DB(db, 'dataset.title')]
 
 db.dataset.contact_email.requires = [IS_EMAIL()]
 db.dataset.repository_link.requires = IS_EMPTY_OR(IS_URL())
-db.dataset.url_link.requires = IS_EMPTY_OR(IS_URL())
+db.dataset.public_link.requires = IS_EMPTY_OR(IS_URL())
 db.dataset.dataset_type.requires = IS_IN_SET(['Data asset', 'Code tool', 'Project workspace'])
 db.dataset.dataset_type.default = 'Data asset'
 db.dataset.provision_status.requires = IS_IN_SET(['','Identified', 'Requested', 'Provided', 'QC', 'Published', 'Archived', 'Working'])      
 
 # show link as link
 db.dataset.repository_link.represent = lambda val, row: None if val is None else A(val, _href=val, _target="_blank")
-db.dataset.url_link.represent = lambda val, row: None if val is None else A(val, _href=val, _target="_blank")
+db.dataset.public_link.represent = lambda val, row: None if val is None else A(val, _href=val, _target="_blank")
 
 # Dataset licencing 
 #### ONE (dataset) to ONE (intellectualright)
@@ -322,13 +317,13 @@ db.define_table(
     'j_dataset_personnel',
     Field('dataset_id', db.dataset, required = True, notnull=True),
     Field('personnel_id', db.personnel, required = True, notnull=True),
-    Field('role', 'string', required = True), 
+    Field('role', 'list:string', required = True), 
     Field('role_description', 'string'),
     Field('notes', 'text'),
     auth.signature,
     format = 'Dataset %(dataset_id)s personnel %(personnel_id)s' 
 )
-db.j_dataset_personnel.role.requires = IS_IN_SET(('Owner', 'Creator', 'Contact', 'Analyst', 'Other'))
+db.j_dataset_personnel.role.requires = IS_IN_SET(('Owner', 'Creator', 'Contact', 'Analyst', 'Other'), multiple = True)
 db.j_dataset_personnel._singular = "Dataset personnel"
 db.j_dataset_personnel._plural = "Dataset personnel"
 
@@ -339,7 +334,7 @@ db.define_table(
       'entity',
 Field('dataset_id', db.dataset, required = True, notnull=True),
 Field('entityname','string', required = True, comment = "The file name, name of database table, etc. It should identify the entity in the dataset. Example: SpeciesAbundance1996.csv", requires = IS_NOT_EMPTY()),
-Field('entitytype', 'string', comment = "General format of the data"),
+Field('entityformat', 'string', comment = "General format of the data"),
 Field('entitydescription', 'string', comment = "Text generally describing the content of the entity."),
 Field('physical_distribution', 'string',
 comment= 'Information required for retrieving the resource.'),
@@ -392,20 +387,20 @@ db.define_table(
     )
 db.accessrequest.title.requires = [IS_NOT_EMPTY()]    
 db.accessrequest.category_access.requires = IS_IN_SET(['Project personnel', 'Data sharing service','Data science service', 'Data training'])
-db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research', 'Government', 'Training', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Other'])
+db.accessrequest.primary_purpose.requires = IS_IN_SET(['', 'Research', 'Government', 'Training', 'Education (postgraduate)', 'Education (undergraduate)', 'Commercial/Industry', 'Media', 'Other'])
 
 # Link access request to dataset
 db.define_table(
     'request_dataset',
     Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
     Field('dataset_id', db.dataset, required = True, notnull=True),
-    Field('approved', 'string', required = True, default = 'Pending'),
+    Field('status', 'string', required = True, default = 'Pending'),
     Field('approval_date', 'date', required = True, comment = "Date request approved or denied"),
     Field('approval_documentation', 'string', comment = 'Location of record of approval'),
     auth.signature,
     format = '%(accessrequest_id)s - %(dataset_id)s'
     )
-db.request_dataset.approved.requires = IS_IN_SET(['Approved', 'Pending', 'Denied'])
+db.request_dataset.status.requires = IS_IN_SET(['Approved', 'Pending', 'Denied'])
 
 ## Secondary to access request
 # record of outputs from access requests
@@ -417,9 +412,9 @@ db.define_table(
     Field('output_category', 'string', comment = "Type of output - conference/journal paper, dataset, report, thesis, etc."),
     Field('output_subcategory', 'string', comment = 'Optional - Further specification of output type, e.g. newspaper article, visualisation/poster, etc.'),
     Field('publication_date', 'date'),
-    Field('link', 'string', comment = "URL link to output if exists - DOI or similar permanent link where possible.'"),
+    Field('link', 'string', comment = "URL link to output if exists - DOI or similar permanent link where possible."),
     Field('status', 'string', default = "Pending"),
-    Field('additional_notes', 'text', comment = 'Additional notes about output'),
+    Field('notes', 'text', comment = 'Additional notes about output'),
     auth.signature,
     format = '%(title)s'
     )
@@ -516,5 +511,18 @@ db.define_table(
     Field('category', 'string'),
     Field('description', 'text'),
     auth.signature,
-    format = '%(table_name)s : %(column_name)s'
-    )
+    format = '%(tbl_nm)s : %(col_nm)s'
+)
+
+
+
+
+
+# Data auditing ####
+db.define_table(
+  'dataset_audit',
+  Field('dataset_id', db.dataset, required = True, notnull = True),
+  Field('audit_notes', 'text'),
+  Field('audit_completed', 'date'),
+  auth.signature
+)
