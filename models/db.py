@@ -525,13 +525,13 @@ db.define_table(
 # Data auditing ####
 db.define_table(
   'dataset_audit',
-  Field('dataset_id', db.dataset, required = True, notnull = True),
-  Field('description_check', 'boolean', comment = "Check of name, title, citation, abstract, methodology, correct spatial and temporal description"),
-  Field('personnel_check', 'boolean', comment = "Check of personnel attached to dataset and correct roles"),
-  Field('entity_check', 'boolean', comment = "Check of entities and their descriptions"),
-  Field('licence_check', 'boolean', comment = "Check of licence and correct accessibility set"),
-  Field('publication_check', 'boolean', comment = "Check of relevant papers/publications"),
-  Field('keywords_check', 'boolean', comment = "Check has keywords"),
+  Field('dataset_id', db.dataset, unique = True, required = True, notnull = True),
+  Field('description_check', 'boolean', default = "F", comment = "Check of name, title, citation, abstract, methodology, correct spatial and temporal description"),
+  Field('personnel_check', 'boolean', default = "F", comment = "Check of personnel attached to dataset and correct roles"),
+  Field('entity_check', 'boolean', default = "F", comment = "Check of entities and their descriptions"),
+  Field('licence_check', 'boolean', default = "F", comment = "Check of licence and correct accessibility set"),
+  Field('publication_check', 'boolean', default = "F", comment = "Check of relevant papers/publications"),
+  Field('keywords_check', 'boolean', default = "F", comment = "Check has keywords"),
   Field('audit_notes', 'text'),
   Field('audit_completed', 'date'),
   auth.signature

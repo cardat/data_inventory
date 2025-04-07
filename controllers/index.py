@@ -34,6 +34,7 @@ def data_dictionary():
     rows=rows,
     grid=grid)
 
+@auth.requires_login()
 def edit_data_dictionary():
     grid = SQLFORM.grid(db.tbl_description,
         fields = [db.tbl_description.tbl_nm, 

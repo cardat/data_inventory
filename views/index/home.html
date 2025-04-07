@@ -18,8 +18,12 @@
 	<li>{{=XML(T('The main tool for managing repository users is at %s',
            A('%(application)s/manage/browse/repo_user/'%request,
              _href=URL(c='manage', f='browse', args='repo_user'))))}}</li>
-	</ul>
+	
 	<br/>
+	<li>{{=XML(T('The hidden dataset audit page is at %s', 
+		   A('%(application)s/audit/dataset_check/'%request,
+             _href=URL(c='audit', f='dataset_check'))))}}</li>
+	</ul>
 	
 	<h4>{{=T('Quickstart')}}</h4>
 	<p>I would like to...</p>
