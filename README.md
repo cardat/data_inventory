@@ -1,6 +1,6 @@
 CARDAT Data Inventory
 ================
-2025-03-06
+2025-04-07
 
 ## About
 
@@ -20,22 +20,44 @@ The **web2py** app can run as simple standalone desktop app using an
 SQLite database file or a PostgreSQL database server for shared and
 concurrent access by a team.
 
-## To install
+## Quickstart
+
+Install web2py:
 
 1.  Download the [2.x version web2py
     binaries](http://www.web2py.com/init/default/download) and unzip
 2.  Put all the files into your web2py/applications as
     `cardat_data_inventory` or the name you want
-3.  Double-click to run the web2py.exe file and go to
-    `127.0.0.1:8000/cardat_data_inventory` in your browser
-4.  In the top right corner, sign up with a local username and password
 
-The default is to use a local SQLite database. To change this, edit the
-DAL specification in `models/db.py`, providing the remote database name,
-hostname, and authentication details as required. Note that if you are
-connecting to an existing database for the first time (e.g. shared
-database among multiple instances of the app), include the
-`fake_migrate_all = True` argument. This can be removed afterwards.
+If you are using a **PostgreSQL database and the inventory database
+tables already exist**:
+
+1.  Edit the `models/db.py` DAL specification for the database with your
+    database and login details
+    (`postgres://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASENAME`)
+2.  Set the `fake_migrate_all = True`, then start (or restart) web2py
+3.  Set `fake_migrate_all = False` after web2py has run and recreated
+    its table metadata files in the `databases` folder
+
+If you are using a **PostgreSQL database and it does not yet exist**:
+
+1.  Edit the `models/db.py` DAL specification for the database with your
+    database and login details
+    (`postgres://USERNAME:PASSWORD@HOSTNAME:PORT/DATABASENAME`)
+2.  Set the `migrate = True`, then start (or restart) web2py.
+3.  Set `migrate = False` after web2py has run and created the relevant
+    tables.
+
+If you would like to simply **use a local SQLite database** (stored by
+default in the `databases` folder), leave the DAL specification as is.
+
+To use the inventory:
+
+1.  Double-click to run the web2py.exe file and go to
+    `127.0.0.1:8000/cardat_data_inventory` in your browser
+2.  In the top right corner, sign up with a local username and password
+    (this is a username and password for the inventory itself, separate
+    to your database login, if any).
 
 ## General database structure
 
