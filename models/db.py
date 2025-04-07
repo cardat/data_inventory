@@ -218,8 +218,8 @@ db.define_table(
     'dataset',
     ## title, personnel, identification of dataset
     Field('project_id', db.project, required = True, notnull=True),
-    Field('shortname','string', unique = True, notnull=True, comment = 'A concise name indicating directory or repository name of dataset or tool'),
-    Field('title','string', unique = True, notnull=True, comment = 'Descriptive, human-readable name'),
+    Field('shortname','string', notnull=True, comment = 'A concise name indicating directory or repository name of dataset or tool'),
+    Field('title','string', notnull=True, comment = 'Descriptive, human-readable name'),
     Field('contact','string', comment = 'A contact name for general enquiries', default = "CARDAT Data Team"),
     Field('contact_email','string', comment = 'An email address for general enquiries.'),
     Field('repository_path' ,'string', comment='Dataset location in CARDAT repository - typically folder path from Environment_General or ResearchProjects_CAR. May be alternative storage location for restricted data.'),
@@ -284,13 +284,18 @@ db.define_table(
     Field('licence_code', 'string', comment = "The licence to allow others to copy, distribute or display work and derivative works based upon it and define the way credit will be attributed. Common licences are 'CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND' or 'other'. For more information see http://creativecommons.org/licenses/."),
     Field('licence_text', 'string', comment = 'The name of the licence.'),
     Field('special_conditions', 'text', comment = 'Any restrictions to be placed on the access or use of this dataset, especially the timeframe if this is limited.'),
-    Field('path_to_licence', 'string', comment = 'Optional.'),
+    Field('path_to_licence', 'string', comment = 'URL to full licence description or path to file if documented in data repository.'),
+    Field('licencee', 'string', comment = "Name(s) of person/organisation if relevant (e.g. person named on purchased dataset)."),
     Field('accessibility', 'string', comment = 'Broad category of accessibility: Public (no special permission required), CARDAT (no special permission required for CARDAT members), Restricted (special permission required), Other.'),
     Field('notes', 'text', comment = 'Additional info (e.g. licencing of data sources)'),
     auth.signature,
     format = '%(licence_text)s (%(licence_code)s)'
     )
-db.intellectualright.licence_code.requires = IS_IN_SET(['CCBY', 'CCBYSA',  'CCBYND', 'CCBYNC', 'CCBYNCSA', 'CCBYNCND', 'MIT',  'Apache-2.0', 'BSD-3-Clause', 'other'])    
+db.intellectualright.licence_code.requires = IS_IN_SET([
+    'CC-BY-4.0', 'CC-BY-SA-4.0',  'CC-BY-NC-4.0', 'CC-BY-NC-SA-4.0', 'CC-BY-ND-4.0', 'CC-BY-NC-ND-4.0', # Creative Commons
+    'CC-BY-2.5-AU', 'CC-BY-3.0-AU',  # Creative Commons Australia
+    'MIT', 'Apache-2.0', 'BSD-3-Clause', # Software licences
+    'other'])    
 db.intellectualright.accessibility.requires = IS_IN_SET(['Public', 'CARDAT', 'Restricted', 'Other'])
 
 # Journal article (or other documentation) describing the methodology used to produce the dataset.
@@ -323,7 +328,7 @@ db.define_table(
     auth.signature,
     format = 'Dataset %(dataset_id)s personnel %(personnel_id)s' 
 )
-db.j_dataset_personnel.role.requires = IS_IN_SET(('Owner', 'Creator', 'Contact', 'Analyst', 'Other'), multiple = True)
+db.j_dataset_personnel.role.requires = IS_IN_SET(('Owner', 'Creator', 'Contact', 'Analyst', 'Curator', 'Other'), multiple = True)
 db.j_dataset_personnel._singular = "Dataset personnel"
 db.j_dataset_personnel._plural = "Dataset personnel"
 
@@ -378,7 +383,7 @@ db.define_table(
     Field('date_of_request', 'date', required = True,
     comment = "Date request received."),
     Field('description', 'text', comment = "A description of the project for which the data are to be used. Include description of any ethics committee approvals and the intended publication strategy."),
-    Field('category_access', 'text', 
+    Field('category_access', 'string', 
     comment = "Category of access - request is for access to the dataset (Data sharing service), for data wrangling to produce a dataset (Data science service), for working on the dataset/project itself (Project personnel) or for training purposes (Training)"),
     Field('primary_purpose', 'string', comment = "Sector from which request is made - choose the most appropriate"),
     Field('other_info', 'text', comment = "Additional info or notes"),
@@ -449,7 +454,7 @@ db.accessor.role.widget = SQLFORM.widgets.autocomplete(
 # tags for datasets
 db.define_table(
     'keyword',
-    Field('thesaurus', required = True, default = "Collections", comment = "Source thesaurus of keywords"),
+    Field('thesaurus', 'string', required = True, default = "Collections", comment = "Source thesaurus of keywords"),
     Field('keyword', 'string', required = True),
     auth.signature,
     format = '%(thesaurus)s: %(keyword)s'
@@ -506,9 +511,8 @@ db.define_table(
     'tbl_description',
     Field('tbl_nm', 'string', required = True, notnull=True, label = "Table Name"),
     Field('col_nm', 'string', required = True, notnull=True, label = "Field Name"),
-    Field('ordinal_position', 'integer', required = True),
+    Field('col_order', 'integer', required = True),
     Field('data_type', 'string', required = True),
-    Field('category', 'string'),
     Field('description', 'text'),
     auth.signature,
     format = '%(tbl_nm)s : %(col_nm)s'
@@ -522,6 +526,12 @@ db.define_table(
 db.define_table(
   'dataset_audit',
   Field('dataset_id', db.dataset, required = True, notnull = True),
+  Field('description_check', 'boolean', comment = "Check of name, title, citation, abstract, methodology, correct spatial and temporal description"),
+  Field('personnel_check', 'boolean', comment = "Check of personnel attached to dataset and correct roles"),
+  Field('entity_check', 'boolean', comment = "Check of entities and their descriptions"),
+  Field('licence_check', 'boolean', comment = "Check of licence and correct accessibility set"),
+  Field('publication_check', 'boolean', comment = "Check of relevant papers/publications"),
+  Field('keywords_check', 'boolean', comment = "Check has keywords"),
   Field('audit_notes', 'text'),
   Field('audit_completed', 'date'),
   auth.signature

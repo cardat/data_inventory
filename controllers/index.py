@@ -27,8 +27,7 @@ def data_dictionary():
         rows = db(db.tbl_description.tbl_nm == request.args[0]).select(
                     db.tbl_description.col_nm,
                     db.tbl_description.data_type,
-                    db.tbl_description.category,
-                    db.tbl_description.description, orderby = db.tbl_description.ordinal_position)
+                    db.tbl_description.description, orderby = db.tbl_description.col_order)
 
     return dict(form=form,
     table_name=table_name,
@@ -39,11 +38,9 @@ def edit_data_dictionary():
     grid = SQLFORM.grid(db.tbl_description,
         fields = [db.tbl_description.tbl_nm, 
                 db.tbl_description.col_nm, 
-                db.tbl_description.ordinal_position,
-                db.tbl_description.data_type,
-                db.tbl_description.category],
+                db.tbl_description.data_type],
         orderby = [db.tbl_description.tbl_nm, 
-                db.tbl_description.ordinal_position
+                db.tbl_description.col_order
         ],
         user_signature=True
         )

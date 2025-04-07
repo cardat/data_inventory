@@ -58,7 +58,7 @@ def browse():
             db.accessor.accessrequest_id, db.accessor.repo_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 
-            db.repo_user.name, db.repo_user.email, db.repo_user.orcid,
+            db.repo_user.name, db.repo_user.affiliation, db.repo_user.email, db.repo_user.orcid,
 
             db.personnel.name, db.personnel.email, db.personnel.orcid, db.personnel.rorid
         ]
@@ -67,7 +67,9 @@ def browse():
         project = db.project.title,
         dataset = db.dataset.shortname,
         entity = db.entity.entityname,
+        accessrequest = ~db.accessrequest.date_of_request,
         request_output = ~db.request_output.publication_date,
+        accessor = ~db.accessor.begin_date,
         repo_user = db.repo_user.name
     )
     
@@ -162,7 +164,7 @@ def dataset_detail():
             ')', _id='h-licencing'), 
          rows_licence, P(XML('<strong>No licence attached.</strong>'))],
          [H4('Access requests (', 
-            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'accessrequest.dataset_id', dset_id]), user_signature = True), 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_dataset.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-accessrequests'), 
          rows_accessrequests, P(XML('<strong>No access requests attached.</strong>'))]
     ]
