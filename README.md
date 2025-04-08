@@ -1,6 +1,6 @@
 CARDAT Data Inventory
 ================
-2025-04-07
+2025-04-08
 
 ## About
 
@@ -54,10 +54,12 @@ default in the `databases` folder), leave the DAL specification as is.
 To use the inventory:
 
 1.  Double-click to run the web2py.exe file and go to
-    `127.0.0.1:8000/cardat_data_inventory` in your browser
+    `127.0.0.1:8000/cardat_data_inventory` (replace
+    `cardat_data_inventory` with the name of your application folder if
+    you have used a different name) in your browser
 2.  In the top right corner, sign up with a local username and password
     (this is a username and password for the inventory itself, separate
-    to your database login, if any).
+    to your database login).
 
 ## General database structure
 

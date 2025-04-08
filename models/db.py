@@ -401,6 +401,7 @@ db.define_table(
     Field('dataset_id', db.dataset, required = True, notnull=True),
     Field('status', 'string', required = True, default = 'Pending'),
     Field('approval_date', 'date', required = True, comment = "Date request approved or denied"),
+    Field('revoke_date', 'date', comment = "Date access is to be revoked if approval is time-limited"),
     Field('approval_documentation', 'string', comment = 'Location of record of approval'),
     auth.signature,
     format = '%(accessrequest_id)s - %(dataset_id)s'
