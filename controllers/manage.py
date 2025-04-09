@@ -41,7 +41,7 @@ def browse():
             db.project.title, 
             db.j_project_personnel.project_id, db.j_project_personnel.personnel_id, db.j_project_personnel.role,
 
-            db.dataset.shortname, db.dataset.public_link,
+            db.dataset.shortname, db.dataset.provision_status,
             db.j_dataset_personnel.dataset_id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role,
             db.entity.entityname, db.entity.entityformat, db.entity.physical_distribution,
             db.intellectualright.licence_code, db.intellectualright.accessibility,
@@ -60,7 +60,7 @@ def browse():
 
             db.repo_user.name, db.repo_user.affiliation, db.repo_user.email, db.repo_user.orcid,
 
-            db.personnel.name, db.personnel.email, db.personnel.orcid, db.personnel.rorid
+            db.personnel.name, db.personnel.affiliation, db.personnel.email, db.personnel.orcid, db.personnel.rorid
         ]
     
     orderby = dict(
@@ -73,8 +73,63 @@ def browse():
         repo_user = db.repo_user.name
     )
     
-    # custom fields for individual tables
-    links = dict()
+    # custom fields for individual tables, mostly to link upwards for child tables
+    # (e.g. accessor table link upwards to repo_user and request)
+    links = dict(
+      dataset = [
+        dict(header="Details page",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'dataset_detail',
+                                  args = [row.id], user_signature = True),
+                                  _target = "blank"))
+        ],
+      accessor = [
+        dict(header="Request record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ['accessrequest', 'view', 'accessrequest', row.accessrequest_id], user_signature = True))),
+        dict(header="User record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ['repo_user', 'view', 'repo_user', row.repo_user_id], user_signature = True)))
+        ],
+      request_dataset = [
+        dict(header="Request record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ['accessrequest', 'view', 'accessrequest', row.accessrequest_id], user_signature = True))),
+        dict(header="Dataset record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ['dataset', 'view', 'dataset', row.dataset_id], user_signature = True)))
+        ],
+      j_project_personnel = [
+        dict(header="Project record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ['project', 'view', 'project', row.project_id], user_signature = True))),
+        dict(header="Personnel record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ['personnel', 'view', 'personnel', row.personnel_id], user_signature = True)))
+        ],
+      j_dataset_personnel = [
+        dict(header="Dataset record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                                  args = ['dataset', 'view', 'dataset', row.dataset_id], user_signature = True))),
+        dict(header="Personnel record",
+             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+                                                  args = ['personnel', 'view', 'personnel', row.personnel_id], user_signature = True)))
+        ]
+    )
+    
+    # alter display of text and pagination
+    maxtextlength = dict(
+      project = 75, 
+      dataset = 100, 
+      personnel = 50, 
+      accessrequest = 100,
+      accessor = 100
+    )
+    paginate = dict(
+      project = 25,
+      dataset = 25,
+      accessrequest = 10,
+      accessor = 10
+    )
 
     grid = SQLFORM.smartgrid(
         db[table],
@@ -87,11 +142,10 @@ def browse():
         fields = fields_to_show,
         orderby = orderby,
         links = links,
+        maxtextlength = maxtextlength, 
         user_signature=True,
-        maxtextlength = 50, 
         showbuttontext = False,
-        csv=False, 
-        paginate=50)
+        csv=False)
 
     return dict(grid=grid, 
         left_sidebar_enabled='sidebar' in locals(),
@@ -136,6 +190,12 @@ def dataset_detail():
 
     rows_entity = db(db.entity.dataset_id == dset_id).select(
         db.entity.entityname)
+    
+    rows_publications = db(db.dataset_publication.dataset_id == dset_id).select(
+        db.dataset_publication.title, db.dataset_publication.link, db.dataset_publication.author)
+        
+    rows_keywords = db(db.j_dataset_keyword.dataset_id == dset_id).select(
+        db.j_dataset_keyword.keyword_id)
 
     # row = db.dataset(db.dataset.id == dset_id).select()
     # print(row)
@@ -144,7 +204,9 @@ def dataset_detail():
     ('Personnel', False, '#h-personnel'),
     ('Entities', False, '#h-entities'),
     ('Licencing', False, '#h-licencing'),
-    ('Access requests', False, '#h-accessrequests')]
+    ('Access requests', False, '#h-accessrequests'),
+    ('Publications', False, "#h-publications"),
+    ('Keywords', False, "#h-keywords")]
     )
 
     # list of lists (tables to be shown)
@@ -166,7 +228,15 @@ def dataset_detail():
          [H4('Access requests (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_dataset.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-accessrequests'), 
-         rows_accessrequests, P(XML('<strong>No access requests attached.</strong>'))]
+         rows_accessrequests, P(XML('<strong>No access requests attached.</strong>'))],
+         [H4('Publications (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'dataset_publication.dataset_id', dset_id]), user_signature = True), 
+            ')', _id='h-publications'), 
+         rows_publications, P(XML('<strong>No publications attached.</strong>'))],
+         [H4('Keywords (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'j_dataset_keyword.dataset_id', dset_id]), user_signature = True), 
+            ')', _id='h-keywords'), 
+         rows_keywords, P(XML('<strong>No keywords attached.</strong>'))]
     ]
     
     return dict(

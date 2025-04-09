@@ -17,7 +17,7 @@
 {{for subtbl in subtbls: }}
 	{{=subtbl[0]}}
 	{{if len(subtbl[1]) != 0: }}
-	{{=SQLTABLE(subtbl[1], headers='fieldname:capitalize', _class='dset_detail_tbl') }}
+	{{=SQLTABLE(subtbl[1], headers='fieldname:capitalize', _class='dset_detail_tbl', truncate = 100) }}
 	{{else: }}
 	{{=subtbl[2]}}
 	{{pass}}
