@@ -33,7 +33,20 @@ def browse():
             sidebar = P()
         sidebar += SPAN(XML("Jump to field:")) + MENU([(fieldname, False, '#'+link) for fieldname, link in field_html_ids])
 
-
+    # bug fix of view forms
+    if request.args(-3) == "view":
+        # no idea why omitting this causing problems with displaying view SQLFORM
+        function_none_date = lambda v: v if v is not None else None
+        db.dataset.request_date.represent = function_none_date
+        db.dataset.pubdate.represent = function_none_date
+        db.dataset.provision_date.represent = function_none_date
+        db.dataset.temporalcoverage_begindate.represent = function_none_date
+        db.dataset.temporalcoverage_enddate.represent = function_none_date
+        db.accessrequest.date_of_request.represent = function_none_date
+        db.accessor.begin_date.represent = function_none_date
+        db.accessor.end_date.represent = function_none_date
+        db.request_dataset.process_date.represent = function_none_date
+        db.request_dataset.revoke_date.represent = function_none_date
 
     ## options for smartgrid 
     # show these fields in smartgrid
@@ -159,7 +172,7 @@ def browse():
         user_signature=True,
         showbuttontext = False,
         csv=False,
-        represent_none='-')
+        represent_none="-")
 
     return dict(grid=grid, 
         left_sidebar_enabled='sidebar' in locals(),
