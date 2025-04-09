@@ -41,15 +41,15 @@ tr {
 }
 
 /** Style grid table **/
-.web2py_grid tbody {
+.web2py_grid .web2py_htmltable tbody {
   td {
     max-width: 200px;
     word-wrap: break-word;
   }
 }
   
-}
-.web2py_grid .web2py_form table {
+
+.web2py_grid form.web2py_form table tbody {
 	table-layout:fixed;
 	width: 100%;
 	overflow-wrap: break-word;
@@ -65,6 +65,7 @@ tr {
 		overflow-wrap: break-word;
 	}
 }
+
 .web2py_grid .row_buttons {
   white-space: normal; /*override no-wrap*/
 }
