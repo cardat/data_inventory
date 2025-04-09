@@ -56,7 +56,7 @@ def browse():
             db.attr.variable_name, db.attr.units,
             
             db.accessrequest.title, db.accessrequest.date_of_request, db.accessrequest.category_access, db.accessrequest.primary_purpose,
-            db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.status, db.request_dataset.approval_date,
+            db.request_dataset.accessrequest_id, db.request_dataset.dataset_id, db.request_dataset.status, db.request_dataset.process_date,
             db.accessor.accessrequest_id, db.accessor.repo_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 
@@ -68,7 +68,7 @@ def browse():
         dataset = db.dataset.shortname,
         entity = db.entity.entityname,
         accessrequest = ~db.accessrequest.date_of_request,
-        request_dataset = ~db.request_dataset.approval_date,
+        request_dataset = ~db.request_dataset.process_date,
         request_output = ~db.request_output.publication_date,
         accessor = ~db.accessor.begin_date,
         repo_user = db.repo_user.name
@@ -199,8 +199,8 @@ def dataset_detail():
         db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role)
     
     rows_accessrequests = db(db.request_dataset.dataset_id == dset_id).select(
-        db.request_dataset.accessrequest_id, db.request_dataset.approval_date, 
-        orderby = ~db.request_dataset.approval_date, limitby = (0, 10))
+        db.request_dataset.accessrequest_id, db.request_dataset.process_date, 
+        orderby = ~db.request_dataset.process_date, limitby = (0, 10))
 
     rows_entity = db(db.entity.dataset_id == dset_id).select(
         db.entity.entityname)

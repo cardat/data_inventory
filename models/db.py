@@ -400,13 +400,13 @@ db.define_table(
     Field('accessrequest_id', db.accessrequest, required = True, notnull=True),
     Field('dataset_id', db.dataset, required = True, notnull=True),
     Field('status', 'string', required = True, default = 'Pending'),
-    Field('approval_date', 'date', required = True, comment = "Date request approved or denied"),
+    Field('process_date', 'date', required = True, comment = "Date request approved or denied or lapsed"),
     Field('revoke_date', 'date', comment = "Date access is to be revoked if approval is time-limited"),
     Field('approval_documentation', 'string', comment = 'Location of record of approval'),
     auth.signature,
     format = '%(accessrequest_id)s - %(dataset_id)s'
     )
-db.request_dataset.status.requires = IS_IN_SET(['Approved', 'Pending', 'Denied'])
+db.request_dataset.status.requires = IS_IN_SET(['Approved', 'Pending', 'Denied', 'Lapsed'])
 
 ## Secondary to access request
 # record of outputs from access requests
