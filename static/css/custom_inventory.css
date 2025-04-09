@@ -41,6 +41,14 @@ tr {
 }
 
 /** Style grid table **/
+.web2py_grid tbody {
+  td {
+    max-width: 200px;
+    word-wrap: break-word;
+  }
+}
+  
+}
 .web2py_grid .web2py_form table {
 	table-layout:fixed;
 	width: 100%;
@@ -57,14 +65,23 @@ tr {
 		overflow-wrap: break-word;
 	}
 }
+.web2py_grid .row_buttons {
+  white-space: normal; /*override no-wrap*/
+}
 
-[type="text"], [type="password"], select {
-  width: 95%;
+
+/**Forms**/
+.web2py_grid form table {
+  width: 100%;
+}
+[type="text"], [type="password"], select { 
+  width: 95% !important;
 }
 
 .web2py_grid .web2py_form table tr td.w2p_fl label {
 	text-align: right;
 }
+
 
 /** Style quick access forms **/
 .form_quick_select > table {
@@ -73,6 +90,7 @@ tr {
 .form_quick_select > table .w2p_fl {
 	width:100px;
 }
+
 
 /** Style dataset details table **/
 table.dset_detail_tbl {

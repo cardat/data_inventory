@@ -38,10 +38,12 @@ def browse():
     ## options for smartgrid 
     # show these fields in smartgrid
     fields_to_show = [
+            db.personnel.name, db.personnel.affiliation, db.personnel.email, db.personnel.orcid, db.personnel.rorid,
+            
             db.project.title, 
             db.j_project_personnel.project_id, db.j_project_personnel.personnel_id, db.j_project_personnel.role,
 
-            db.dataset.shortname, db.dataset.provision_status,
+            db.dataset.shortname, db.dataset.dataset_type, db.dataset.provision_status, db.dataset.pubdate,
             db.j_dataset_personnel.dataset_id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role,
             db.entity.entityname, db.entity.entityformat, db.entity.physical_distribution,
             db.intellectualright.licence_code, db.intellectualright.accessibility,
@@ -58,9 +60,7 @@ def browse():
             db.accessor.accessrequest_id, db.accessor.repo_user_id, db.accessor.begin_date, db.accessor.end_date, db.accessor.role, db.accessor.key_contact,
             db.request_output.accessrequest_id, db.request_output.output_category, db.request_output.link, db.request_output.title, db.request_output.publication_date, db.request_output.status,
 
-            db.repo_user.name, db.repo_user.affiliation, db.repo_user.email, db.repo_user.orcid,
-
-            db.personnel.name, db.personnel.affiliation, db.personnel.email, db.personnel.orcid, db.personnel.rorid
+            db.repo_user.name, db.repo_user.affiliation, db.repo_user.email, db.repo_user.orcid
         ]
     
     orderby = dict(
@@ -68,6 +68,7 @@ def browse():
         dataset = db.dataset.shortname,
         entity = db.entity.entityname,
         accessrequest = ~db.accessrequest.date_of_request,
+        request_dataset = ~db.request_dataset.approval_date,
         request_output = ~db.request_output.publication_date,
         accessor = ~db.accessor.begin_date,
         repo_user = db.repo_user.name
@@ -76,42 +77,47 @@ def browse():
     # custom fields for individual tables, mostly to link upwards for child tables
     # (e.g. accessor table link upwards to repo_user and request)
     links = dict(
+      project = [
+        dict(header="Datasets",
+             body = lambda row: A(XML("Datasets"), _href=URL(c = 'manage', f = 'browse',
+                                  args = ["project", "dataset.project_id", row.id], user_signature = True)))
+        ],
       dataset = [
         dict(header="Details page",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'dataset_detail',
+             body = lambda row: A(XML("Details&#10143;"), _href=URL(c = 'manage', f = 'dataset_detail',
                                   args = [row.id], user_signature = True),
                                   _target = "blank"))
         ],
       accessor = [
         dict(header="Request record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Request&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                   args = ['accessrequest', 'view', 'accessrequest', row.accessrequest_id], user_signature = True))),
         dict(header="User record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("User&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                   args = ['repo_user', 'view', 'repo_user', row.repo_user_id], user_signature = True)))
         ],
       request_dataset = [
         dict(header="Request record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Request&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                   args = ['accessrequest', 'view', 'accessrequest', row.accessrequest_id], user_signature = True))),
         dict(header="Dataset record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Dataset&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                   args = ['dataset', 'view', 'dataset', row.dataset_id], user_signature = True)))
         ],
       j_project_personnel = [
         dict(header="Project record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Project&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                   args = ['project', 'view', 'project', row.project_id], user_signature = True))),
         dict(header="Personnel record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Personnel&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                   args = ['personnel', 'view', 'personnel', row.personnel_id], user_signature = True)))
         ],
       j_dataset_personnel = [
         dict(header="Dataset record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Dataset&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                                   args = ['dataset', 'view', 'dataset', row.dataset_id], user_signature = True))),
         dict(header="Personnel record",
-             body = lambda row: A(XML("&#10143;"), _href=URL(c = 'manage', f = 'browse',
+             body = lambda row: A(XML("Personnel&#10143;"), _href=URL(c = 'manage', f = 'browse',
                                                   args = ['personnel', 'view', 'personnel', row.personnel_id], user_signature = True)))
         ]
     )
@@ -121,7 +127,10 @@ def browse():
       project = 75, 
       dataset = 100, 
       personnel = 50, 
+      j_project_personnel = 50, 
+      j_dataset_personnel = 50, 
       accessrequest = 100,
+      request_dataset = 100,
       accessor = 100
     )
     paginate = dict(
@@ -130,22 +139,27 @@ def browse():
       accessrequest = 10,
       accessor = 10
     )
+    
+    # allow correctly linked tables
+    # do not include dataset as browsing via dataset to joining tables produces URL on dataset (from joining table) which errors
+    linked_tables = [
+      'j_project_personnel', # child tables of project
+      'j_dataset_personnel', 'entity', 'intellectualright', 'dataset_publication', 'j_dataset_keyword', # child tables of dataset
+      'attr', # child table of entity
+      'accessor', 'request_output', 'request_dataset' # child tables of accessrequest
+    ]
 
     grid = SQLFORM.smartgrid(
         db[table],
-        linked_tables=[
-            'j_project_personnel', 'dataset', # child tables of project
-            'j_dataset_personnel', 'entity', 'intellectualright', 'dataset_publication', 'j_dataset_keyword', # child tables of dataset
-            'attr', # child table of entity
-            'accessor', 'request_output', 'request_dataset' # child tables of accessrequest
-            ],
+        linked_tables=linked_tables,
         fields = fields_to_show,
         orderby = orderby,
         links = links,
         maxtextlength = maxtextlength, 
         user_signature=True,
         showbuttontext = False,
-        csv=False)
+        csv=False,
+        represent_none='-')
 
     return dict(grid=grid, 
         left_sidebar_enabled='sidebar' in locals(),
