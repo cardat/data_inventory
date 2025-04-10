@@ -26,7 +26,7 @@ def browse():
         # Construct sidebar
         # add a data dictionary link if table exists in data dictionary
         if db(db.tbl_description.tbl_nm == table_name).count() != 0:
-            sidebar = P(A(XML('<strong>Open data dictionary -></strong>'), 
+            sidebar = P(A(XML('Open data dictionary ->'), 
                         _href = URL(c='index', f="data_dictionary", args = table_name, user_signature = True),
                         _target = "_blank")) + HR(_style = "margin:5px;")
         else:
@@ -246,28 +246,28 @@ def dataset_detail():
         [H4('Personnel (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'j_dataset_personnel.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-personnel'), 
-         rows_personnel, P(XML('<strong>No personnel attached.</strong>'))
+         rows_personnel, P(EM('No personnel attached.'))
          ],
         [H4('Entities (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'entity.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-entities'), 
-         rows_entity, P(XML('<strong>No entities attached.</strong>'))],
+         rows_entity, P(EM('No entities attached.'))],
          [H4('Licencing (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'intellectualright.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-licencing'), 
-         rows_licence, P(XML('<strong>No licence attached.</strong>'))],
+         rows_licence, P(EM('No licence attached.'))],
          [H4('Access requests (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_dataset.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-accessrequests'), 
-         rows_accessrequests, P(XML('<strong>No access requests attached.</strong>'))],
+         rows_accessrequests, P(EM('No access requests attached.'))],
          [H4('Publications (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'dataset_publication.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-publications'), 
-         rows_publications, P(XML('<strong>No publications attached.</strong>'))],
+         rows_publications, P(EM('No publications attached.'))],
          [H4('Keywords (', 
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'j_dataset_keyword.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-keywords'), 
-         rows_keywords, P(XML('<strong>No keywords attached.</strong>'))]
+         rows_keywords, P(EM('No keywords attached.'))]
     ]
     
     return dict(
