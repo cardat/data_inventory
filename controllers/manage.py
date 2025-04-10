@@ -33,10 +33,11 @@ def browse():
             sidebar = P()
         sidebar += SPAN(XML("Jump to field:")) + MENU([(fieldname, False, '#'+link) for fieldname, link in field_html_ids])
 
-    # bug fix of view forms
+    # bug fix of view forms - date fields not compatible with argument represent_none
     if request.args(-3) == "view":
         # no idea why omitting this causing problems with displaying view SQLFORM
         function_none_date = lambda v: v if v is not None else None
+        db.project.project_established.represent = function_none_date
         db.dataset.request_date.represent = function_none_date
         db.dataset.pubdate.represent = function_none_date
         db.dataset.provision_date.represent = function_none_date
@@ -59,7 +60,7 @@ def browse():
             db.dataset.shortname, db.dataset.dataset_type, db.dataset.provision_status, db.dataset.pubdate,
             db.j_dataset_personnel.dataset_id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role,
             db.entity.entityname, db.entity.entityformat, db.entity.physical_distribution,
-            db.intellectualright.licence_code, db.intellectualright.accessibility,
+            db.intellectualright.licence_code, db.intellectualright.accessibility, db.intellectualright.path_to_licence,
             db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.link,
             
             db.keyword.thesaurus, db.keyword.keyword,
@@ -96,7 +97,7 @@ def browse():
                                   args = ["project", "dataset.project_id", row.id], user_signature = True)))
         ],
       dataset = [
-        dict(header="Details page",
+        dict(header="Full details",
              body = lambda row: A(XML("Details&#10143;"), _href=URL(c = 'manage', f = 'dataset_detail',
                                   args = [row.id], user_signature = True),
                                   _target = "blank"))
@@ -142,9 +143,12 @@ def browse():
       personnel = 50, 
       j_project_personnel = 50, 
       j_dataset_personnel = 50, 
+      intellectualright = 100,
       accessrequest = 100,
       request_dataset = 100,
-      accessor = 100
+      request_output = 100,
+      accessor = 100,
+      repo_user = 100
     )
     paginate = dict(
       project = 25,

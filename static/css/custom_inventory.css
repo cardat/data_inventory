@@ -68,6 +68,11 @@ tr {
 
 .web2py_grid .row_buttons {
   white-space: normal; /*override no-wrap*/
+  a {
+    padding: 0px 2px 0px 2px;
+    margin: 0px;
+    border: 1px dotted #105ba2;
+  }
 }
 
 
