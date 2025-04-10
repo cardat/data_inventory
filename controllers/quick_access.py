@@ -68,8 +68,9 @@ def duplicate_dataset():
     # Choose dataset to copy
     form = SQLFORM.factory(
         Field('select_dataset', 'dataset.id', requires=IS_IN_DB(db, 'dataset.id', '%(shortname)s')),
-        Field('copy_level', requires=IS_IN_SET(("Basic metadata",)), 
-            default = "Basic metadata", widget = SQLFORM.widgets.radio.widget),
+        Field('copy_level', 'list:string', requires=IS_IN_SET((
+          "Basic metadata", "Intellectual rights", "Personnel"), multiple = True), 
+            default = ("Basic metadata", "Intellectual rights", "Personnel"), widget = SQLFORM.widgets.checkboxes.widget),
         Field('confirm_duplication', requires=[IS_IN_SET((True,)), IS_NOT_EMPTY()], widget = SQLFORM.widgets.checkboxes.widget),
         table_name = "select_dataset",
         submit_button='Duplicate'
@@ -84,6 +85,27 @@ def duplicate_dataset():
         for i in vars_nocopy:
             selected.pop(i, None)
         new_id = db.dataset.insert(**selected)
+        
+        # copy intellectual rights if included
+        if "Intellectual rights" in form.vars.copy_level:
+        # .find("Intellectual rights") != -1:
+            rows_rights = db(db.intellectualright.dataset_id == form.vars.select_dataset).select()
+            for row in rows_rights:
+                row['dataset_id'] = new_id
+                row.pop('id', None)
+                db.intellectualright.insert(**row)
+                
+        if "Personnel" in form.vars.copy_level:
+            rows_personnel = db(db.j_dataset_personnel.dataset_id == form.vars.select_dataset).select()
+            for row in rows_personnel:
+                row['dataset_id'] = new_id
+                row.pop('id', None)
+                db.j_dataset_personnel.insert(**row)
+              
+
+        
+        # copy personnel if included
+        
         
         response.flash = "Dataset copied"
         redirect(URL(c='manage', f='browse', 

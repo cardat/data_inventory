@@ -201,8 +201,8 @@ db.define_table(
     'j_project_personnel',
     Field('project_id', db.project, required = True, notnull=True),
     Field('personnel_id', db.personnel, required = True, notnull=True),
-    Field('role', 'string', required = True), 
-    Field('notes', 'string'),
+    Field('role', 'string', required = True, comment = "Select Owner or Other"), 
+    Field('notes', 'string', comment = "Additional role information"),
     auth.signature,
     format = 'Project %(project_id)s personnel %(personnel_id)s' 
 )
@@ -322,8 +322,8 @@ db.define_table(
     'j_dataset_personnel',
     Field('dataset_id', db.dataset, required = True, notnull=True),
     Field('personnel_id', db.personnel, required = True, notnull=True),
-    Field('role', 'list:string', required = True), 
-    Field('role_description', 'string'),
+    Field('role', 'list:string', required = True, comment = "Select one or more broad roles"), 
+    Field('role_description', 'string', comment = "Optional detailed description of role"),
     Field('notes', 'text'),
     auth.signature,
     format = 'Dataset %(dataset_id)s personnel %(personnel_id)s' 
