@@ -100,7 +100,7 @@ def browse():
         dict(header="Full details",
              body = lambda row: A(XML("Details&#10143;"), _href=URL(c = 'manage', f = 'dataset_detail',
                                   args = [row.id], user_signature = True),
-                                  _target = "blank"))
+                                  _target = "_blank"))
         ],
       accessor = [
         dict(header="Request record",
