@@ -108,7 +108,7 @@ db.define_table(
 db.repo_user.name.requires = IS_NOT_EMPTY()
 db.repo_user.orcid.requires = [IS_EMPTY_OR([
     IS_NOT_IN_DB(db, 'repo_user.orcid'),
-    IS_MATCH('^\d{4}(-\d{4}){3}$', error_message='Not an ORCID format')])] 
+    IS_MATCH('^\d{4}-\d{4}-\d{4}-[0-9X]{4}$', error_message='Not an ORCID format')])] 
 db.repo_user.website.requires = [IS_EMPTY_OR(IS_URL())]
 db.repo_user.email.requires = IS_EMAIL()
 db.repo_user.email_alt.requires = IS_LIST_OF(IS_EMAIL())
@@ -147,7 +147,7 @@ db.personnel.name.requires = IS_NOT_EMPTY()
 # require valid identifier formatting
 db.personnel.orcid.requires = [IS_EMPTY_OR([
     IS_NOT_IN_DB(db, 'personnel.orcid'),
-    IS_MATCH('^\d{4}(-\d{4}){3}$', error_message='Not a valid ORCID format (expect XXXX-XXXX-XXXX-XXXX)')])] 
+    IS_MATCH('^\d{4}-\d{4}-\d{4}-[0-9X]{4}$', error_message='Not a valid ORCID format (expect XXXX-XXXX-XXXX-XXXX)')])] 
 db.personnel.rorid.requires = [IS_EMPTY_OR([
     IS_NOT_IN_DB(db, 'personnel.rorid'), 
     IS_MATCH('^[A-Za-z0-9]{9}$', error_message='Not a valid ROR format (expect 9-character alphanumeric string)')])] 
