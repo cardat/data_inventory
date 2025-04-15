@@ -1,16 +1,21 @@
 
 {{extend 'layout.html'}}
   
-
-  <h4>{{=T('View full dataset details for...')}}</h4>
+  <h4>View...</h4>
+  <h5>{{=T('...full dataset details for (dataset shortname):')}}</h5>
   {{=form_view_dset}}
+  
+  <h5>{{=T('...full request details for (request title):')}}</h5>
+  {{=form_view_request}}
+  
   <hr>
-  <h4>{{=T('Edit project details for...')}}</h4>
+  <h4>Edit...</h4>
+  <h5>{{=T('...project details for:')}}</h5>
   {{=form_edit_project}}
-  <h4>{{=T('Edit dataset details for...')}}</h4>
+  <h5>{{=T('...dataset details for:')}}</h5>
   {{=form_edit_dset}}
-  <h4>{{=T('Edit personnel details for...')}}</h4>
+  <h5>{{=T('...personnel details for:')}}</h5>
   {{=form_edit_personnel}}
-  <h4>{{=T('Edit user details for...')}}</h4>
+  <h5>{{=T('...user details for:')}}</h5>
   {{=form_edit_user}}
   

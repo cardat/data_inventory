@@ -102,6 +102,12 @@ def browse():
                                   args = [row.id], user_signature = True),
                                   _target = "_blank"))
         ],
+      accessrequest = [
+        dict(header="Full details",
+             body = lambda row: A(XML("Details&#10143;"), _href=URL(c = 'manage', f = 'request_detail',
+                                  args = [row.id], user_signature = True),
+                                  _target = "_blank"))
+        ],
       accessor = [
         dict(header="Request record",
              body = lambda row: A(XML("Request&#10143;"), _href=URL(c = 'manage', f = 'browse',
@@ -268,6 +274,76 @@ def dataset_detail():
             A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'j_dataset_keyword.dataset_id', dset_id]), user_signature = True), 
             ')', _id='h-keywords'), 
          rows_keywords, P(EM('No keywords attached.'))]
+    ]
+    
+    return dict(
+        table_heading=table_heading,
+        table=table,
+        subtbls = subtbls,
+        left_sidebar_enabled='sidebar' in locals(),
+        left_sidebar=sidebar if 'sidebar' in locals() else None
+    )
+    
+    
+def request_detail():
+    accessrequest_id = request.args[0]
+    if not accessrequest_id in db.accessrequest.id: redirect(URL('error'))
+
+    # Main metadata for dataset
+    rows=db(db.accessrequest.id == accessrequest_id).select()
+    if rows: # transpose this and manually build table (match subtable structure)
+        rows_tbl = []
+        count = 1
+        for field in db.accessrequest.fields:
+            val = rows[0][field]
+            if field in ('description', 'other_info') and val is not None:
+                val = XML(val.replace('\n', '<br>'), sanitize=True, permitted_tags=['br/'])
+            rows_tbl.append(TR(TD(field), TD(val), _class = 'w2p_even' if count % 2 == 0 else 'w2p_odd'))
+            count += 1
+        table=TABLE(THEAD(TR(TH('Field'), TH('Value'))), 
+                *rows_tbl,
+                _class = 'request_detail_tbl')
+    else:
+        table='No metadata record found.'
+
+    table_heading = H4('Access request description (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['accessrequest', 'edit', 'accessrequest', accessrequest_id], user_signature = True)), 
+            ')', _id='h-request')
+
+    # Further tables attached to this dataset record
+    rows_request_dataset = db(db.request_dataset.accessrequest_id == accessrequest_id).select(
+        db.request_dataset.dataset_id, db.request_dataset.status, db.request_dataset.process_date, db.request_dataset.revoke_date)
+
+    rows_accessors = db(db.accessor.accessrequest_id == accessrequest_id).select(
+        db.accessor.repo_user_id, db.accessor.role, db.accessor.key_contact, db.accessor.begin_date, db.accessor.end_date)
+    
+    rows_request_output = db(db.request_output.accessrequest_id == accessrequest_id).select(
+        db.request_output.title, db.request_output.author, db.request_output.output_category, db.request_output.publication_date, db.request_output.link, db.request_output.status)
+
+    # row = db.dataset(db.dataset.id == dset_id).select()
+    # print(row)
+    
+    sidebar =  MENU([('Request description', False, '#h-request'),
+    ('Request datasets', False, '#h-request_datasets'),
+    ('Accessors', False, '#h-accessors'),
+    ('Request outputs', False, '#h-request_outputs')])
+
+    # list of lists (tables to be shown)
+    # each sublist has the following 3 elements - Heading, rows (to be shown), Message if zero rows
+    subtbls = [
+        [H4('Request datasets (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_dataset.accessrequest_id', accessrequest_id]), user_signature = True), 
+            ')', _id='h-request_datasets'), 
+         rows_request_dataset, P(EM('No datasets attached.'))
+         ],
+        [H4('Accessors (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'accessor.accessrequest_id', accessrequest_id]), user_signature = True), 
+            ')', _id='h-accessors'), 
+         rows_accessors, P(EM('No accessors attached.'))],
+        [H4('Outputs (', 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_output.accessrequest_id', accessrequest_id]), user_signature = True), 
+            ')', _id='h-request_outputs'), 
+         rows_request_output, P(EM('No outputs attached.'))]
     ]
     
     return dict(

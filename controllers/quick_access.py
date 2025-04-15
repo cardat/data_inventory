@@ -11,6 +11,16 @@ def jump():
     )
     if form_view_dset.process().accepted:
         redirect(URL(c='manage', f='dataset_detail', args=[form_view_dset.vars.view_dataset]))
+        
+    # Go to request_detail view
+    form_view_request = SQLFORM.factory(
+        Field('view_request', requires=IS_IN_DB(db, 'accessrequest.id'), 
+            widget = SQLFORM.widgets.autocomplete(request, db.accessrequest.title, id_field=db.accessrequest.id,
+                **autocomplete_args)),
+        table_name = "view_request", _class = "form_quick_select"
+    )
+    if form_view_dset.process().accepted:
+        redirect(URL(c='manage', f='dataset_detail', args=[form_view_dset.vars.view_dataset]))
 
     # Jump to edit project
     form_edit_project = SQLFORM.factory(
@@ -58,6 +68,7 @@ def jump():
         user_signature=True))
 
     return dict(form_view_dset = form_view_dset,
+    form_view_request = form_view_request,
     form_edit_project = form_edit_project,
     form_edit_dset = form_edit_dset,
     form_edit_personnel = form_edit_personnel,
