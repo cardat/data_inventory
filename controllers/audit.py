@@ -8,6 +8,7 @@ def dataset_check():
     
     grid = SQLFORM.grid(
         query = db(db.dataset_audit),
+        field_id = db.dataset_audit.id,
         fields = [db.project.title, db.dataset.shortname, 
                   db.dataset.provision_status,
                   db.dataset_audit.description_check,
