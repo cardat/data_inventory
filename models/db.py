@@ -42,6 +42,7 @@ response.generic_patterns = ['*'] # if request.is_local else []
 ## (more options discussed in gluon/tools.py)
 #########################################################################
 
+from datetime import datetime
 from gluon.tools import Auth, Crud, Service, PluginManager, prettydate
 auth = Auth(db)
 crud, service, plugins = Crud(db), Service(), PluginManager()
@@ -534,6 +535,6 @@ db.define_table(
   Field('publication_check', 'boolean', default = "F", comment = "Check of relevant papers/publications"),
   Field('keywords_check', 'boolean', default = "F", comment = "Check has keywords"),
   Field('audit_notes', 'text'),
-  Field('audit_completed', 'date'),
+  Field('audit_completed', 'date', default = datetime(2000,1,1), comment = "Default dummy null date of 2000-01-01."),
   auth.signature
 )
