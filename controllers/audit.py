@@ -8,7 +8,7 @@ def dataset_check():
     
     grid = SQLFORM.grid(
         query = db(db.dataset_audit),
-        fields = [db.dataset_audit.dataset_id, 
+        fields = [db.project.title, db.dataset.shortname, 
                   db.dataset.provision_status,
                   db.dataset_audit.description_check,
                   db.dataset_audit.personnel_check, 
@@ -17,11 +17,11 @@ def dataset_check():
                   db.dataset_audit.publication_check, 
                   db.dataset_audit.keywords_check,
                   db.dataset_audit.audit_completed],
-        left = db.dataset.on(db.dataset.id==db.dataset_audit.dataset_id),
+        left = [db.dataset.on(db.dataset.id==db.dataset_audit.dataset_id), db.project.on(db.dataset.project_id==db.project.id)],
         deletable = False, 
         showbuttontext = False,
         maxtextlength=100,
-        orderby = db.dataset_audit.audit_completed
+        orderby = [db.dataset_audit.audit_completed, db.project.title, db.dataset.shortname]
       )
     
     return dict(grid=grid)
