@@ -332,16 +332,16 @@ def request_detail():
     # each sublist has the following 3 elements - Heading, rows (to be shown), Message if zero rows
     subtbls = [
         [H4('Request datasets (', 
-            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_dataset.accessrequest_id', accessrequest_id]), user_signature = True), 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['accessrequest', 'request_dataset.accessrequest_id', accessrequest_id]), user_signature = True), 
             ')', _id='h-request_datasets'), 
          rows_request_dataset, P(EM('No datasets attached.'))
          ],
         [H4('Accessors (', 
-            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'accessor.accessrequest_id', accessrequest_id]), user_signature = True), 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['accessrequest', 'accessor.accessrequest_id', accessrequest_id]), user_signature = True), 
             ')', _id='h-accessors'), 
          rows_accessors, P(EM('No accessors attached.'))],
         [H4('Outputs (', 
-            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['dataset', 'request_output.accessrequest_id', accessrequest_id]), user_signature = True), 
+            A('edit', _href=URL(c = 'manage', f = 'browse', args = ['accessrequest', 'request_output.accessrequest_id', accessrequest_id]), user_signature = True), 
             ')', _id='h-request_outputs'), 
          rows_request_output, P(EM('No outputs attached.'))]
     ]
