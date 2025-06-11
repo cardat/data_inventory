@@ -146,6 +146,8 @@ def browse():
     maxtextlength = dict(
       project = 75, 
       dataset = 100, 
+      entity = 100,
+      dataset_publication = 100,
       personnel = 50, 
       j_project_personnel = 50, 
       j_dataset_personnel = 50, 
