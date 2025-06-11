@@ -43,6 +43,7 @@ def browse():
         db.dataset.provision_date.represent = function_none_date
         db.dataset.temporalcoverage_begindate.represent = function_none_date
         db.dataset.temporalcoverage_enddate.represent = function_none_date
+        db.dataset_publication.publication_date.represent = function_none_date
         db.accessrequest.date_of_request.represent = function_none_date
         db.accessor.begin_date.represent = function_none_date
         db.accessor.end_date.represent = function_none_date
@@ -61,7 +62,7 @@ def browse():
             db.j_dataset_personnel.dataset_id, db.j_dataset_personnel.personnel_id, db.j_dataset_personnel.role,
             db.entity.entityname, db.entity.entityformat, db.entity.physical_distribution,
             db.intellectualright.licence_code, db.intellectualright.accessibility, db.intellectualright.path_to_licence,
-            db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.link,
+            db.dataset_publication.title, db.dataset_publication.author, db.dataset_publication.publication_year, db.dataset_publication.link,
             
             db.keyword.thesaurus, db.keyword.keyword,
             db.j_dataset_keyword.dataset_id, db.j_dataset_keyword.keyword_id,
