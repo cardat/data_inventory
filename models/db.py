@@ -306,6 +306,8 @@ db.define_table(
     Field('link', 'string', comment = 'Link to publication, DOI or other persistent URL preferred'),
     Field('title', 'string', comment = 'Title of publication', notnull=True),
     Field('author', 'string', comment = 'Author(s) of publication'),
+    Field('publication_date', 'date', comment = 'Date of publication'),
+    Field('publication_year', 'integer', comment = 'Year of publication'),
     Field('citation', 'text', comment = 'Citation of publication'),
     auth.signature,
     format = '%(title)s'
