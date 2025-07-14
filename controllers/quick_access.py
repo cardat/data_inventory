@@ -139,18 +139,18 @@ def add_user_as_personnel():
     if form.validate():
         selected = db.personnel._filter_fields(db.repo_user(form.vars.select_user))
         
-        if selected['orcid'] is None:
-            if db(db.personnel.name == selected['name']).count():
-                response.flash = "User name already exists in personnel table"
-            else: 
-              allow = True
-        elif selected['orcid'] is not None:
-            if db((db.personnel.orcid == selected['orcid']) | (db.personnel.name == selected['name'])).count():
-                response.flash = "User name or ORCID already exists in personnel table"
-            else:
-              allow = True
-        
-        if allow:
+        # if no orcid, check name only not duplicate
+        if selected['orcid'] is None and db(db.personnel.name == selected['name']).count():
+            response.flash = "User name already exists in personnel table"
+            
+        # if orcid, check orcid and name not duplicate
+        elif (selected['orcid'] is not None and 
+              db((db.personnel.orcid == selected['orcid']) | (db.personnel.name == selected['name'])).count()
+              ):
+            response.flash = "User name or ORCID already exists in personnel table"
+            
+        # duplicate if passed checks
+        else:
             new_id = db.personnel.insert(**selected)
             response.flash = "User added as personnel record"
             redirect(URL(c='manage', f='browse', 
